@@ -7,11 +7,14 @@ Powered by [pyproject.nix](https://github.com/pyproject-nix/pyproject.nix).
 
 Brand new & experimental.
 
+## Docs
+
+https://pyproject-nix.github.io/uv2nix/
+
 ## Matrix chat
 
 https://matrix.to/#/#pyproject.nix:blad.is
 
+---
 
-## Docs
-
-https://pyproject-nix.github.io/uv2nix/
+This project is supported by [Bladis Limited](https://blad.is/consulting/).
