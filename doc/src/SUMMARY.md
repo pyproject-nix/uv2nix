@@ -14,6 +14,7 @@
   - [Testing](./patterns/testing.md)
   - [Development scripts](./patterns/scripts.md)
   - [Using `meta`](./patterns/meta.md)
+  - [Shipping applications](./patterns/applications.md)
 
 - [Platform quirks](./platform-quirks.md)
 
