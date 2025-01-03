@@ -134,10 +134,10 @@ in
       editableRoot ? null,
     }:
     let
-      isEditable = editableRoot == null;
+      isEditable = editableRoot != null;
 
       attrs =
-        if isEditable then
+        if ! isEditable then
           renderers.mkDerivation
             {
               project = localProject;
@@ -152,6 +152,10 @@ in
               project = localProject;
               inherit environ;
               root = editableRoot;
+              projectOverrides = {
+                # Use dynamic metadata field
+                inherit (package) version;
+              };
             }
             {
               inherit
