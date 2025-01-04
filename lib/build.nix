@@ -137,7 +137,7 @@ in
       isEditable = editableRoot != null;
 
       attrs =
-        if ! isEditable then
+        if !isEditable then
           renderers.mkDerivation
             {
               project = localProject;
