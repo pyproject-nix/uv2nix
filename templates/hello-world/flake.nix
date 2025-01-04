@@ -108,6 +108,8 @@
             {
               # Prevent uv from managing Python downloads
               UV_PYTHON_DOWNLOADS = "never";
+              # Force uv to use nixpkgs Python interpreter
+              UV_PYTHON = python.interpreter;
             }
             // lib.optionalAttrs pkgs.stdenv.isLinux {
               # Python libraries often load native shared objects using dlopen(3).
@@ -147,15 +149,21 @@
               virtualenv
               pkgs.uv
             ];
+
+            env = {
+              # Don't create venv using uv
+              UV_NO_SYNC = "1";
+
+              # Force uv to use Python interpreter from venv
+              UV_PYTHON = "${virtualenv}/bin/python";
+
+              # Prevent uv from downloading managed Python's
+              UV_PYTHON_DOWNLOADS = "never";
+            };
+
             shellHook = ''
               # Undo dependency propagation by nixpkgs.
               unset PYTHONPATH
-
-              # Don't create venv using uv
-              export UV_NO_SYNC=1
-
-              # Prevent uv from downloading managed Python's
-              export UV_PYTHON_DOWNLOADS=never
 
               # Get repository root using git. This is expanded at runtime by the editable `.pth` machinery.
               export REPO_ROOT=$(git rev-parse --show-toplevel)

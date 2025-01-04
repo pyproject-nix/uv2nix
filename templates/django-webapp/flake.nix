@@ -352,11 +352,14 @@
               venv
               pkgs.uv
             ];
+            env = {
+              UV_NO_SYNC = "1";
+              UV_PYTHON = "${venv}/bin/python";
+              UV_PYTHON_DOWNLOADS = "never";
+            };
             shellHook = ''
               unset PYTHONPATH
               export REPO_ROOT=$(git rev-parse --show-toplevel)
-              export UV_NO_SYNC=1
-              export UV_PYTHON_DOWNLOADS=never
             '';
           };
         }
