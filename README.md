@@ -3,10 +3,6 @@
 Ingest [uv](https://docs.astral.sh/uv/) workspace using [Nix](https://nixos.org/).
 Powered by [pyproject.nix](https://github.com/pyproject-nix/pyproject.nix).
 
-## Status
-
-Brand new & experimental.
-
 ## Docs
 
 https://pyproject-nix.github.io/uv2nix/

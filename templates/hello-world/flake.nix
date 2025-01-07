@@ -23,12 +23,6 @@
     };
   };
 
-  # Disclaimer: Uv2nix is new and experimental.
-  # Users are expected to be able to contribute fixes.
-  #
-  # Note that uv2nix is _not_ using Nixpkgs buildPythonPackage.
-  # It's using https://pyproject-nix.github.io/pyproject.nix/build.html
-
   outputs =
     {
       nixpkgs,
@@ -64,6 +58,8 @@
       # - https://pyproject-nix.github.io/uv2nix/FAQ.html
       pyprojectOverrides = _final: _prev: {
         # Implement build fixups here.
+        # Note that uv2nix is _not_ using Nixpkgs buildPythonPackage.
+        # It's using https://pyproject-nix.github.io/pyproject.nix/build.html
       };
 
       # This example is only using x86_64-linux
@@ -128,6 +124,7 @@
         uv2nix =
           let
             # Create an overlay enabling editable mode for all local dependencies.
+            # Note: Editable support is still under development and this API might change.
             editableOverlay = workspace.mkEditablePyprojectOverlay {
               # Use environment variable
               root = "$REPO_ROOT";

@@ -4,5 +4,3 @@
 It's designed to be used both as a development environment manager, and to build production packages for projects.
 
 It is heavily based on [`pyproject.nix`](https://pyproject-nix.github.io/pyproject.nix) and its [build infrastructure](https://pyproject-nix.github.io/pyproject.nix/build.html).
-
-Disclaimer: `uv2nix` is new and experimental.

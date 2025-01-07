@@ -229,6 +229,7 @@ fix (self: {
 
       /*
         Generate an overlay to use with pyproject.nix's build infrastructure to install dependencies in editable mode.
+        Note: Editable support is still under development and this API might change.
 
         See https://pyproject-nix.github.io/pyproject.nix/lib/build.html
       */
