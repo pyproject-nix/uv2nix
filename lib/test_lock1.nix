@@ -39,6 +39,7 @@ let
     no-build = ./fixtures/no-build;
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
+    conflicts = ./fixtures/conflicts;
   };
 
   projects = mapAttrs (
@@ -206,4 +207,60 @@ in
         testResolveKitchenSink = testResolve "kitchenSinkA" { };
         testMultiPythons = testResolve "multiPythons" { };
       };
+
+  filterConflicts =
+    let
+      lock = lock1.parseLock locks.conflicts;
+
+      mkTest =
+        spec:
+        let
+          filtered = lock1.filterConflicts {
+            inherit spec lock;
+          };
+        in
+        assert filtered.conflicts == [ ];
+        map (pkg: {
+          optional-dependencies = lib.attrNames pkg.optional-dependencies;
+          dev-dependencies = lib.attrNames pkg.dev-dependencies;
+        }) (lib.filter (pkg: pkg.name == "conflicts") filtered.package);
+
+    in
+    {
+      testExtraA = {
+        expr = mkTest {
+          conflicts = [ "extra-a" ];
+        };
+        expected = [
+          {
+            dev-dependencies = [ ];
+            optional-dependencies = [ "extra-a" ];
+          }
+        ];
+      };
+
+      testExtraB = {
+        expr = mkTest {
+          conflicts = [ "extra-b" ];
+        };
+        expected = [
+          {
+            dev-dependencies = [ ];
+            optional-dependencies = [ "extra-b" ];
+          }
+        ];
+      };
+
+      testGroupC = {
+        expr = mkTest {
+          conflicts = [ "group-c" ];
+        };
+        expected = [
+          {
+            dev-dependencies = [ "group-c" ];
+            optional-dependencies = [ ];
+          }
+        ];
+      };
+    };
 }

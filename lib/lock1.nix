@@ -4,7 +4,7 @@ let
   inherit (pyproject-nix.lib.pep508) parseMarkers evalMarkers;
   inherit (pyproject-nix.lib.pypa) parseWheelFileName;
   inherit (pyproject-nix.lib) pep440;
-  inherit (builtins) baseNameOf toJSON;
+  inherit (builtins) baseNameOf toJSON partition;
   inherit (lib)
     mapAttrs
     fix
@@ -24,8 +24,9 @@ let
     head
     listToAttrs
     any
-    throwIf
     optionalAttrs
+    throwIf
+    filterAttrs
     ;
 
 in
@@ -45,6 +46,8 @@ fix (self: {
       # List of dependency names to start resolution from
       dependencies,
     }:
+    # Assert that there are no conflicts, or that conflicts have been filtered
+    assert lock.conflicts == [ ];
     let
       # Evaluate top-level resolution-markers
       resolution-markers = mapAttrs (_: evalMarkers environ) lock.resolution-markers;
@@ -200,6 +203,69 @@ fix (self: {
     };
 
   /*
+    Filter package conflicts from lock according to dependency specification.
+
+    This function exists to filter uv.lock _before_ being passed to resolveDependencies,
+    allowing the runtime solver to treat the lock as if no conflicts exists.
+  */
+  filterConflicts =
+    {
+      lock,
+      spec,
+    }:
+    if lock.conflicts == [ ] then
+      lock
+    else
+      (
+        let
+          # Get a list of deselected dependency conflicts to filter
+          deselected' = concatMap (
+            conflict:
+            let
+              # Find a single conflict branch to select
+              resolution = partition (
+                def:
+                let
+                  extras' =
+                    spec.${def.package} or (throw "Package '${spec.package}' not present in resolution specification");
+                in
+                elem (def.extra or def.group) extras'
+              ) conflict;
+
+            in
+            throwIf (length resolution.right == 0)
+              "Conflict resolution selected no conflict specifier. Misspelled extra/group?"
+              throwIf
+              (length resolution.right > 1)
+              "Conflict resolution selected more than one conflict specifier, resolution still ambigious"
+              resolution.wrong
+          ) lock.conflicts;
+          deselected = groupBy (def: def.package) deselected';
+        in
+        # Return rewritten lock without conflicts
+        assert deselected' != [ ];
+        lock
+        // {
+          conflicts = [ ];
+          package = map (
+            pkg:
+            if !deselected ? ${pkg.name} then
+              pkg
+            else
+              pkg
+              // {
+                optional-dependencies = filterAttrs (
+                  n: _: !any (def: def ? extra && def.extra == n) deselected.${pkg.name}
+                ) pkg.optional-dependencies;
+                dev-dependencies = filterAttrs (
+                  n: _: !any (def: def ? group && def.group == n) deselected.${pkg.name}
+                ) pkg.dev-dependencies;
+              }
+          ) lock.package;
+        }
+      );
+
+  /*
     Parse unmarshaled uv.lock
     .
   */
@@ -226,8 +292,8 @@ fix (self: {
       conflicts ? [ ],
     }:
     assert version == 1;
-    throwIf (conflicts != [ ]) "Conflicting resolutions not yet supported" {
-      inherit version;
+    {
+      inherit version conflicts;
       requires-python = pep440.parseVersionConds requires-python;
       manifest = self.parseManifest manifest;
       package = map self.parsePackage package;

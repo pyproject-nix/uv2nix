@@ -85,11 +85,11 @@
                 self.formatter.${system}
                 pkgs.npins
               ] ++ self.packages.${system}.doc.nativeBuildInputs;
-
-              shellHook = ''
-                export UV_NO_SYNC=1
-                export UV_PYTHON_DOWNLOADS=never
-              '';
+              env = {
+                UV_NO_SYNC = "1";
+                UV_PYTHON_DOWNLOADS = "never";
+                UV_PYTHON = pkgs.python3.interpreter;
+              };
             };
         in
         {

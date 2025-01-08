@@ -1,4 +1,5 @@
 {
+  "conflicts": [],
   "manifest": {
     "members": [
       "multi-depends",
