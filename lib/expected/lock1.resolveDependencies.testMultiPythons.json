@@ -1,4 +1,5 @@
 {
   "arpeggio": "arpeggio-2.0.2",
-  "multi-depends": "multi-depends-0.1.0"
+  "multi-depends": "multi-depends-0.1.0",
+  "multi-pythons": "multi-pythons-0.1.0"
 }

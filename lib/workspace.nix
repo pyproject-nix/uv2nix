@@ -112,9 +112,6 @@ fix (self: {
         ) localPackages
       );
 
-      # Bootstrap resolver from top-level workspace projects
-      topLevelDependencies = map pep508.parseString (attrNames workspaceProjects);
-
       # Load supported tool.uv settings
       loadedConfig = self.loadConfig (
         # Extract pyproject.toml from loaded projects
@@ -137,7 +134,11 @@ fix (self: {
           throw "No sourcePreference was passed, and could not be automatically inferred from workspace config";
 
       mkOverlay' =
-        { sourcePreference, environ }:
+        {
+          sourcePreference,
+          environ,
+          spec,
+        }:
         final: prev:
         let
           inherit (final) callPackage;
@@ -149,15 +150,9 @@ fix (self: {
           pythonVersion = environ'.python_full_version.value;
 
           resolved = lock1.resolveDependencies {
-            # Note: Attrset in the shape of pep621.parseDependencies
-            dependencies = {
-              dependencies = topLevelDependencies;
-              extras = { };
-              build-systems = [ ];
-              groups = { };
-            };
             lock = uvLock;
             environ = environ';
+            dependencies = attrNames spec;
           };
 
           buildRemotePackage = build.remote {
@@ -186,7 +181,7 @@ fix (self: {
     assert assertMsg (
       !(config'.no-binary && config'.no-build)
     ) "Both tool.uv.no-build and tool.uv.no-binary are set to true, making the workspace unbuildable";
-    {
+    rec {
       /*
         Workspace config as loaded by loadConfig
         .
@@ -211,7 +206,10 @@ fix (self: {
           environ ? { },
         }:
         let
-          overlay = mkOverlay' { inherit sourcePreference environ; };
+          overlay = mkOverlay' {
+            inherit sourcePreference environ;
+            spec = deps.all;
+          };
           crossOverlay = lib.composeExtensions (_final: prev: {
             pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;
           }) overlay;
