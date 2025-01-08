@@ -132,6 +132,7 @@ in
       pythonPkgsBuildHost,
       # Editable root as a string
       editableRoot ? null,
+      darwinMinVersionHook,
     }:
     let
       isEditable = editableRoot != null;
@@ -173,6 +174,12 @@ in
       // {
         # Take potentially dynamic fields from uv.lock package
         inherit (package) version;
+
+        buildInputs =
+          (attrs.buildInputs or [ ])
+          ++ (optionals stdenv.isDarwin) [
+            (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion)
+          ];
 
         passthru = attrs.passthru // {
           dependencies =
@@ -226,6 +233,7 @@ in
       pyprojectHook,
       pyprojectWheelHook,
       sourcePreference ? defaultSourcePreference,
+      darwinMinVersionHook,
     }:
     let
       inherit (package) source;
@@ -395,7 +403,8 @@ in
                 )
               ) selectedWheel'.platformTags
             )
-          );
+          )
+          ++ (optionals stdenv.isDarwin [ (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion) ]);
       }
     );
 }
