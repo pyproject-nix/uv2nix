@@ -32,7 +32,14 @@ let
       pythonEnv =
         let
           # Generate overlay
-          overlay = ws.mkPyprojectOverlay { inherit sourcePreference environ; };
+          overlay = ws.mkPyprojectOverlay (
+            {
+              inherit sourcePreference environ;
+            }
+            // lib.optionalAttrs (spec != { }) {
+              dependencies = spec;
+            }
+          );
 
           # Construct package set
           pythonSet =
@@ -199,6 +206,28 @@ let
         };
         check = ''
           python -c 'import tqdm'
+        '';
+      };
+
+      conflictsA = mkCheck {
+        name = "conflicts-group-a";
+        root = ../lib/fixtures/conflicts;
+        spec = {
+          conflicts = [ "extra-a" ];
+        };
+        check = ''
+          python -c 'import arpeggio'
+        '';
+      };
+
+      conflictsB = mkCheck {
+        name = "conflicts-group-b";
+        root = ../lib/fixtures/conflicts;
+        spec = {
+          conflicts = [ "extra-b" ];
+        };
+        check = ''
+          python -c 'import arpeggio'
         '';
       };
 

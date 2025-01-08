@@ -1,10 +1,25 @@
 {
-  "conflicts": [],
+  "conflicts": [
+    [
+      {
+        "extra": "extra-a",
+        "package": "conflicts"
+      },
+      {
+        "extra": "extra-b",
+        "package": "conflicts"
+      },
+      {
+        "group": "group-c",
+        "package": "conflicts"
+      }
+    ]
+  ],
   "manifest": {
     "members": []
   },
   "options": {
-    "exclude-newer": "2024-08-21T13:41:16Z",
+    "exclude-newer": null,
     "prerelease-mode": null,
     "resolution-mode": null
   },

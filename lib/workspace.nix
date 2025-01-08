@@ -150,7 +150,10 @@ fix (self: {
           pythonVersion = environ'.python_full_version.value;
 
           resolved = lock1.resolveDependencies {
-            lock = uvLock;
+            lock = lock1.filterConflicts {
+              lock = uvLock;
+              inherit spec;
+            };
             environ = environ';
             dependencies = attrNames spec;
           };
@@ -204,11 +207,14 @@ fix (self: {
           # PEP-508 environment customisations.
           # Example: { platform_release = "5.10.65"; }
           environ ? { },
+          # Dependency specification used for conflict resolution.
+          # By default mkPyprojectOverlay resolves the entire workspace, but that will not work for resolutions with conflicts.
+          dependencies ? deps.all,
         }:
         let
           overlay = mkOverlay' {
             inherit sourcePreference environ;
-            spec = deps.all;
+            spec = dependencies;
           };
           crossOverlay = lib.composeExtensions (_final: prev: {
             pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;

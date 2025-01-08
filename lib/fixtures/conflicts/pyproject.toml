@@ -1,0 +1,36 @@
+[project]
+name = "conflicts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "adisbladis", email = "adisbladis@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+extra-a = [
+  "arpeggio==2.0.0",
+]
+extra-b = [
+  "arpeggio==2.0.1",
+]
+
+[dependency-groups]
+group-c = [
+  "arpeggio==2.0.0",
+]
+
+[tool.uv]
+conflicts = [
+  [
+    { extra = "extra-a" },
+    { extra = "extra-b" },
+    { group = "group-c" },
+  ],
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
