@@ -42,9 +42,7 @@ fix (self: {
       lock,
       # PEP-508 environment as returned by pyproject-nix.lib.pep508.mkEnviron
       environ,
-      # Top-level project dependencies:
-      # - as parsed by pyproject-nix.lib.pep621.parseDependencies
-      # - as filtered by pyproject-nix.lib.pep621.filterDependencies
+      # List of dependency names to start resolution from
       dependencies,
     }:
     let
@@ -73,27 +71,10 @@ fix (self: {
         inherit package;
       };
 
-      # Filter top-level deps for genericClosure startSet
-      filterTopLevelDeps =
-        deps:
-        map mkKey (
-          concatMap (
-            dep:
-            filter (
-              pkg: all (spec: pep440.comparators.${spec.op} pkg.version' spec.version) dep.conditions
-            ) candidates.${dep.name}
-          ) deps
-        );
-
-      depNames = attrNames allDependencies;
-
       # Resolve dependencies recursively
       allDependencies = groupBy (dep: dep.package.name) (genericClosure {
         # Recurse into top-level dependencies.
-        startSet =
-          filterTopLevelDeps dependencies.dependencies
-          ++ filterTopLevelDeps (concatLists (attrValues dependencies.extras))
-          ++ filterTopLevelDeps (concatLists (attrValues dependencies.groups));
+        startSet = concatMap (name: map mkKey candidates.${name}) dependencies;
 
         operator =
           { key, ... }:
@@ -114,6 +95,8 @@ fix (self: {
             )
           ) allCandidates.${key};
       });
+
+      depNames = attrNames allDependencies;
 
       # Reduce dependency candidates down to the one resolved dependency.
       reduceDependencies =

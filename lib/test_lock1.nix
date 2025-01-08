@@ -1,6 +1,5 @@
 {
   lock1,
-  workspace,
   lib,
   pkgs,
   pyproject-nix,
@@ -15,7 +14,7 @@ let
     importTOML
     nameValuePair
     ;
-  inherit (pyproject-nix.lib) pep508 pep621;
+  inherit (pyproject-nix.lib) pep508;
 
   environs = {
     cpython312 = pyproject-nix.lib.pep508.mkEnviron pkgs.python312;
@@ -185,7 +184,7 @@ in
           environ = pep508.mkEnviron interpreter;
 
           resolved = lock1.resolveDependencies {
-            dependencies = pep621.filterDependenciesByEnviron environ [ ] project.dependencies;
+            dependencies = [ project.pyproject.project.name ];
             lock = lock1.parseLock locks.${projectName};
             inherit environ;
           };

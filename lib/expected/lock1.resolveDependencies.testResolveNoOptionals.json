@@ -1,3 +1,4 @@
 {
-  "arpeggio": "arpeggio-2.0.2"
+  "arpeggio": "arpeggio-2.0.2",
+  "optional-deps": "optional-deps-0.1.0"
 }
