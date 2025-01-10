@@ -87,7 +87,7 @@
       # Package a virtual environment as our main application.
       #
       # Enable no optional dependencies for production build.
-      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello-world-env" workspace.deps.default;
+      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello" workspace.deps.default;
 
       # This example provides two different modes of development:
       # - Impurely using uv to manage virtual environments
