@@ -51,8 +51,8 @@
       "type": "compare"
     }
   },
-  "supported-markers": [
-    {
+  "supported-markers": {
+    "sys_platform == 'darwin'": {
       "lhs": {
         "type": "variable",
         "value": "sys_platform"
@@ -64,7 +64,7 @@
       },
       "type": "compare"
     },
-    {
+    "sys_platform == 'linux'": {
       "lhs": {
         "type": "variable",
         "value": "sys_platform"
@@ -76,6 +76,6 @@
       },
       "type": "compare"
     }
-  ],
+  },
   "version": 1
 }

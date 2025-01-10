@@ -63,7 +63,7 @@ in
         in
         depName:
         let
-          package = lock1.parsePackage (findFirstPkg depName locks.${projectName}.package);
+          package = lock1.parsePackage { } (findFirstPkg depName locks.${projectName}.package);
         in
         pkgs.callPackage (buildRemotePackage package) {
           pyprojectHook = null;

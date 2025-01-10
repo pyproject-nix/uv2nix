@@ -125,7 +125,7 @@ in
 
   parsePackage =
     let
-      parsePkg = name: fixture: lock1.parsePackage (findFirstPkg name fixture.package);
+      parsePkg = name: fixture: lock1.parsePackage { } (findFirstPkg name fixture.package);
     in
     mapAttrs
       (name: expr: {
@@ -155,7 +155,7 @@ in
       filterPkg =
         name: fixture: environ:
         let
-          parsed = lock1.parsePackage (findFirstPkg name fixture.package);
+          parsed = lock1.parsePackage { } (findFirstPkg name fixture.package);
         in
         lock1.filterPackage environ parsed;
 

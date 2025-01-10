@@ -292,17 +292,21 @@ fix (self: {
       conflicts ? [ ],
     }:
     assert version == 1;
-    {
+    lib.fix (toplevel: {
       inherit version conflicts;
       requires-python = pep440.parseVersionConds requires-python;
       manifest = self.parseManifest manifest;
-      package = map self.parsePackage package;
+      package = map (self.parsePackage {
+        inherit (toplevel) resolution-markers supported-markers;
+      }) package;
       resolution-markers = listToAttrs (
         map (markers: lib.nameValuePair markers (parseMarkers markers)) resolution-markers
       );
-      supported-markers = map parseMarkers supported-markers;
+      supported-markers = listToAttrs (
+        map (markers: lib.nameValuePair markers (parseMarkers markers)) supported-markers
+      );
       options = parseOptions options;
-    };
+    });
 
   parseManifest =
     {
@@ -386,6 +390,17 @@ fix (self: {
           requires-dev = mapAttrs (_: map parseRequires) requires-dev;
         };
 
+    in
+    {
+      resolution-markers ? { },
+      supported-markers ? { },
+    }:
+    let
+      # Parse marker, but avoid parsing markers already present in toplevel uv.lock marker fields
+      parseMarker =
+        marker: resolution-markers.${marker} or supported-markers.${marker} or (parseMarkers marker);
+      inherit (pep440) parseVersion;
+
       parseDependency =
         {
           name,
@@ -401,8 +416,8 @@ fix (self: {
             version
             extra
             ;
-          version' = if version != null then pep440.parseVersion version else null;
-          marker = if marker != null then parseMarkers marker else null;
+          version' = if version != null then parseVersion version else null;
+          marker = if marker != null then parseMarker marker else null;
         };
 
     in

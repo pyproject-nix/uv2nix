@@ -127,6 +127,6 @@
       "type": "compare"
     }
   },
-  "supported-markers": [],
+  "supported-markers": {},
   "version": 1
 }
