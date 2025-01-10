@@ -132,7 +132,7 @@ in
       pythonPkgsBuildHost,
       # Editable root as a string
       editableRoot ? null,
-      darwinMinVersionHook,
+      darwinMinVersionHook ? null,
     }:
     let
       isEditable = editableRoot != null;
@@ -177,9 +177,9 @@ in
 
         buildInputs =
           (attrs.buildInputs or [ ])
-          ++ (optionals stdenv.isDarwin) [
+          ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
             (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion)
-          ];
+          ]);
 
         passthru = attrs.passthru // {
           dependencies =
@@ -233,7 +233,7 @@ in
       pyprojectHook,
       pyprojectWheelHook,
       sourcePreference ? defaultSourcePreference,
-      darwinMinVersionHook,
+      darwinMinVersionHook ? null,
     }:
     let
       inherit (package) source;
@@ -404,7 +404,7 @@ in
               ) selectedWheel'.platformTags
             )
           )
-          ++ (optionals stdenv.isDarwin [ (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion) ]);
+          ++ (lib.optional (stdenv.isDarwin && darwinMinVersionHook != null) (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion));
       }
     );
 }
