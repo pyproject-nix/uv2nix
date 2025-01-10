@@ -366,6 +366,7 @@ fix (self: {
               git ? null,
               specifier ? null,
               extras ? null,
+              ...
             }:
             {
               inherit
@@ -378,7 +379,7 @@ fix (self: {
                 extras
                 ;
               marker = if marker != null then parseMarkers marker else null;
-              specifier = if specifier != null then pep440.parseVersionCond specifier else null;
+              specifier = if specifier != null then pep440.parseVersionConds specifier else null;
             };
         in
         {

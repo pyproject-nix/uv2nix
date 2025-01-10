@@ -177,21 +177,23 @@
         },
         "name": "coverage",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              5,
-              3
-            ],
-            "str": "5.3"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                5,
+                3
+              ],
+              "str": "5.3"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -394,22 +396,24 @@
         },
         "name": "mypy",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              1,
-              1,
-              1
-            ],
-            "str": "1.1.1"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                1,
+                1,
+                1
+              ],
+              "str": "1.1.1"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -447,22 +451,24 @@
         },
         "name": "mypy",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              1,
-              1,
-              1
-            ],
-            "str": "1.1.1"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                1,
+                1,
+                1
+              ],
+              "str": "1.1.1"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -500,22 +506,24 @@
         },
         "name": "mypy",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              1,
-              1,
-              1
-            ],
-            "str": "1.1.1"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                1,
+                1,
+                1
+              ],
+              "str": "1.1.1"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -553,22 +561,24 @@
         },
         "name": "mypy",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              1,
-              1,
-              1
-            ],
-            "str": "1.1.1"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                1,
+                1,
+                1
+              ],
+              "str": "1.1.1"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -744,22 +754,24 @@
         },
         "name": "pytest",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              4,
-              3,
-              0
-            ],
-            "str": "4.3.0"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                4,
+                3,
+                0
+              ],
+              "str": "4.3.0"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -781,22 +793,24 @@
         },
         "name": "pytest",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              4,
-              3,
-              0
-            ],
-            "str": "4.3.0"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                4,
+                3,
+                0
+              ],
+              "str": "4.3.0"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -818,22 +832,24 @@
         },
         "name": "pytest",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              4,
-              3,
-              0
-            ],
-            "str": "4.3.0"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                4,
+                3,
+                0
+              ],
+              "str": "4.3.0"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
@@ -855,22 +871,24 @@
         },
         "name": "pytest",
         "path": null,
-        "specifier": {
-          "op": ">=",
-          "version": {
-            "dev": null,
-            "epoch": 0,
-            "local": null,
-            "post": null,
-            "pre": null,
-            "release": [
-              4,
-              3,
-              0
-            ],
-            "str": "4.3.0"
+        "specifier": [
+          {
+            "op": ">=",
+            "version": {
+              "dev": null,
+              "epoch": 0,
+              "local": null,
+              "post": null,
+              "pre": null,
+              "release": [
+                4,
+                3,
+                0
+              ],
+              "str": "4.3.0"
+            }
           }
-        },
+        ],
         "url": null
       },
       {
