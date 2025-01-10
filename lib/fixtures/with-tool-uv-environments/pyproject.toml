@@ -1,0 +1,20 @@
+[project]
+name = "with-tool-uv-environments"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "adisbladis", email = "adisbladis@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+with-tool-uv-environments = "with_tool_uv_environments:main"
+
+[tool.uv]
+environments = ["sys_platform == 'linux'"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -167,6 +167,8 @@ fix (self: {
         in
         # Assert that requires-python from uv.lock is compatible with this interpreter
         assert all (spec: pep440.comparators.${spec.op} pythonVersion spec.version) uvLock.requires-python;
+        # Assert that supported-environments is compatible with this environment
+        assert all (marker: pep508.evalMarkers environ' marker) (attrValues uvLock.supported-markers);
         mapAttrs (
           name: package:
           # Call different builder functions depending on if package is local or remote (pypi)

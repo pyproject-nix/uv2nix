@@ -125,11 +125,17 @@ in
     let
       mkTest =
         workspaceRoot:
-        { packages }:
+        {
+          packages,
+          environ ? { },
+        }:
         let
           ws = workspace.loadWorkspace { inherit workspaceRoot; };
 
-          overlay = ws.mkPyprojectOverlay { sourcePreference = "wheel"; };
+          overlay = ws.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+            inherit environ;
+          };
 
           pythonSet =
             (pkgs.callPackage pyproject-nix.build.packages {
@@ -179,6 +185,23 @@ in
           pkg-a = "0.1.0";
           pkg-b = "0.1.0";
         };
+      };
+
+      testSupportedMarkersOK = {
+        expr = mkTest ./fixtures/with-tool-uv-environments { packages = [ "with-tool-uv-environments" ]; };
+        expected = {
+          with-tool-uv-environments = "0.1.0";
+        };
+      };
+
+      testSupportedMarkersFail = {
+        expr = mkTest ./fixtures/with-tool-uv-environments {
+          packages = [ "with-tool-uv-environments" ];
+          environ = {
+            sys_platform = "templeos";
+          };
+        };
+        expectedError.type = "AssertionError";
       };
     };
 

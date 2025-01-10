@@ -1,0 +1,13 @@
+version = 1
+requires-python = ">=3.12"
+resolution-markers = [
+    "sys_platform == 'linux'",
+]
+supported-markers = [
+    "sys_platform == 'linux'",
+]
+
+[[package]]
+name = "with-tool-uv-environments"
+version = "0.1.0"
+source = { editable = "." }
