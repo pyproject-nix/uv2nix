@@ -27,6 +27,7 @@ let
     optionalAttrs
     throwIf
     filterAttrs
+    nameValuePair
     ;
 
 in
@@ -292,7 +293,7 @@ fix (self: {
       conflicts ? [ ],
     }:
     assert version == 1;
-    lib.fix (toplevel: {
+    fix (toplevel: {
       inherit version conflicts;
       requires-python = pep440.parseVersionConds requires-python;
       manifest = self.parseManifest manifest;
@@ -300,10 +301,10 @@ fix (self: {
         inherit (toplevel) resolution-markers supported-markers;
       }) package;
       resolution-markers = listToAttrs (
-        map (markers: lib.nameValuePair markers (parseMarkers markers)) resolution-markers
+        map (markers: nameValuePair markers (parseMarkers markers)) resolution-markers
       );
       supported-markers = listToAttrs (
-        map (markers: lib.nameValuePair markers (parseMarkers markers)) supported-markers
+        map (markers: nameValuePair markers (parseMarkers markers)) supported-markers
       );
       options = parseOptions options;
     });

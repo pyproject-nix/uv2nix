@@ -37,6 +37,10 @@ let
     groupBy
     head
     isString
+    composeExtensions
+    optionalString
+    inPureEvalMode
+    hasPrefix
     ;
   inherit (builtins) readDir hasContext;
   inherit (pyproject-nix.lib.project) loadUVPyproject; # Note: Maybe we want a loader that will just "remap-all-the-things" into standard attributes?
@@ -218,7 +222,7 @@ fix (self: {
             inherit sourcePreference environ;
             spec = dependencies;
           };
-          crossOverlay = lib.composeExtensions (_final: prev: {
+          crossOverlay = composeExtensions (_final: prev: {
             pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;
           }) overlay;
         in
@@ -246,10 +250,10 @@ fix (self: {
           # Workspace members to make editable as a list of strings. Defaults to all local projects.
           members ? map (package: package.name) localPackages,
         }:
-        assert assertMsg (!lib.hasPrefix builtins.storeDir root) ''
+        assert assertMsg (!hasPrefix builtins.storeDir root) ''
           Editable root was passed as a Nix store path.
 
-          ${lib.optionalString lib.inPureEvalMode ''
+          ${optionalString inPureEvalMode ''
             This is most likely because you are using Flakes, and are automatically inferring the editable root from workspaceRoot.
             Flakes are copied to the Nix store on evaluation. This can temporarily be worked around using --impure.
           ''}

@@ -17,10 +17,12 @@ let
     versionAtLeast
     findFirst
     optionals
+    optional
     unique
     hasPrefix
     mapAttrs
     groupBy
+    hasSuffix
     ;
   inherit (pyproject-nix.build.lib) renderers;
   inherit (pyproject-nix.lib) pypa;
@@ -184,7 +186,7 @@ in
         passthru = attrs.passthru // {
           dependencies =
             # Include build-system dependencies for editable mode by merging pyproject.toml rendered deps with uv.lock
-            (lib.optionalAttrs isEditable attrs.passthru.dependencies) // (mkSpec package.dependencies);
+            (optionalAttrs isEditable attrs.passthru.dependencies) // (mkSpec package.dependencies);
           optional-dependencies = mapAttrs (_: mkSpec) package.optional-dependencies;
           dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
         };
@@ -373,10 +375,10 @@ in
         };
 
         nativeBuildInputs =
-          lib.optional (lib.hasSuffix ".zip" (src.passthru.url or "")) unzip
-          ++ lib.optional (format == "pyproject") pyprojectHook
-          ++ lib.optional (format == "wheel") pyprojectWheelHook
-          ++ lib.optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook;
+          optional (hasSuffix ".zip" (src.passthru.url or "")) unzip
+          ++ optional (format == "pyproject") pyprojectHook
+          ++ optional (format == "wheel") pyprojectWheelHook
+          ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook;
       }
       // optionalAttrs (format == "wheel") {
         # Don't strip prebuilt wheels
@@ -404,7 +406,9 @@ in
               ) selectedWheel'.platformTags
             )
           )
-          ++ (lib.optional (stdenv.isDarwin && darwinMinVersionHook != null) (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion));
+          ++ (optional (stdenv.isDarwin && darwinMinVersionHook != null) (
+            darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion
+          ));
       }
     );
 }
