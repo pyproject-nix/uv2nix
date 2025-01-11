@@ -130,10 +130,12 @@
         # The notable difference is that we also apply another overlay here enabling editable mode ( https://setuptools.pypa.io/en/latest/userguide/development_mode.html ).
         #
         # This means that any changes done to your local files do not require a rebuild.
+        #
+        # Note: Editable package support is still unstable and subject to change.
+        #       It currently supports simple pure Python use cases with no dynamic metadata.
         uv2nix =
           let
             # Create an overlay enabling editable mode for all local dependencies.
-            # Note: Editable support is still under development and this API might change.
             editableOverlay = workspace.mkEditablePyprojectOverlay {
               # Use environment variable
               root = "$REPO_ROOT";
