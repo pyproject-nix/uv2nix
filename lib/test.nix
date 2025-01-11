@@ -23,6 +23,7 @@ fix (self: {
   lock1 = callTest ./test_lock1.nix;
   workspace = callTest ./test_workspace.nix;
   build = callTest ./test_build.nix;
+  overlays = callTest ./test_overlays.nix;
 
   # Yo dawg, I heard you like tests...
   #

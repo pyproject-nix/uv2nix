@@ -9,5 +9,6 @@ fix (
     lock1 = ./lock1.nix;
     workspace = ./workspace.nix;
     build = ./build.nix;
+    overlays = ./overlays.nix;
   }
 )

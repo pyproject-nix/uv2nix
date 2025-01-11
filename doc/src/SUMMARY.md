@@ -29,6 +29,7 @@
 
 - [workspace](./lib/workspace.md)
 - [lock1](./lib/lock1.md)
+- [overlays](./lib/overlays.md)
 
 # Contributing
 
