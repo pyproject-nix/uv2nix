@@ -25,6 +25,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       uv2nix,
       pyproject-nix,
@@ -88,6 +89,14 @@
       #
       # Enable no optional dependencies for production build.
       packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello-world-env" workspace.deps.default;
+
+      # Make hello runnable with `nix run`
+      apps.x86_64-linux = {
+        default = {
+          type = "app";
+          program = "${self.packages.x86_64-linux.default}/bin/hello";
+        };
+      };
 
       # This example provides two different modes of development:
       # - Impurely using uv to manage virtual environments
