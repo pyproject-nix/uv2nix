@@ -1,6 +1,7 @@
 { pyproject-nix, lib, ... }:
 
 let
+  inherit (pyproject-nix.lib.project) loadUVPyproject;
   inherit (pyproject-nix.lib.pep508) parseMarkers evalMarkers;
   inherit (pyproject-nix.lib.pypa) parseWheelFileName;
   inherit (pyproject-nix.lib) pep440;
@@ -453,4 +454,24 @@ fix (self: {
       optional-dependencies = mapAttrs (_: map parseDependency) optional-dependencies;
       dev-dependencies = mapAttrs (_: map parseDependency) dev-dependencies;
     };
+
+  getLocalProjects =
+    # Get local packages from lock as an attribute set of pyproject.nix projects
+    {
+      lock,
+      workspaceRoot,
+      localPackages ? filter self.isLocalPackage lock.package,
+    }:
+    listToAttrs (
+      map (
+        package:
+        nameValuePair package.name (loadUVPyproject {
+          projectRoot =
+            let
+              localPath = self.getLocalPath package;
+            in
+            if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
+        })
+      ) localPackages
+    );
 })

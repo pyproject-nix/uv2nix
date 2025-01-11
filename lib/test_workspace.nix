@@ -7,7 +7,7 @@
 }:
 
 let
-  inherit (lib) nameValuePair listToAttrs;
+  inherit (lib) nameValuePair;
   inherit (import ./testutil.nix { inherit lib; }) capitalise;
 
   # Test fixture workspaces

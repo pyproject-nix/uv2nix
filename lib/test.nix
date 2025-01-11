@@ -24,6 +24,7 @@ fix (self: {
   workspace = callTest ./test_workspace.nix;
   build = callTest ./test_build.nix;
   overlays = callTest ./test_overlays.nix;
+  scripts = callTest ./test_scripts.nix;
 
   # Yo dawg, I heard you like tests...
   #

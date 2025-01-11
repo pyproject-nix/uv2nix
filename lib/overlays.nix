@@ -23,7 +23,7 @@ let
       sourcePreference,
       environ,
       spec,
-      localPackages,
+      localProjects,
     }:
     final: prev:
     let
@@ -57,10 +57,10 @@ let
     mapAttrs (
       name: package:
       # Call different builder functions depending on if package is local or remote (pypi)
-      if localPackages ? ${name} then
+      if localProjects ? ${name} then
         callPackage (build.local {
           environ = environ';
-          localProject = localPackages.${name};
+          localProject = localProjects.${name};
           inherit package;
         }) { }
       else
@@ -90,7 +90,7 @@ in
       # By default mkPyprojectOverlay resolves the entire workspace, but that will not work for resolutions with conflicts.
       spec,
       # Local projects loaded from lock1.loadLocalPackages
-      localPackages,
+      localProjects,
       # Workspace config
       config,
       # Workspace root
@@ -104,7 +104,7 @@ in
           sourcePreference
           environ
           spec
-          localPackages
+          localProjects
           config
           workspaceRoot
           ;

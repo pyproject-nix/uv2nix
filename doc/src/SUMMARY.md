@@ -18,8 +18,11 @@
 
 - [Platform quirks](./platform-quirks.md)
 
+- [Inline script metadata](./usage/inline-metadata.md)
+
 - [Showcases]()
   - [Django](./showcases/django.md)
+
 
 # Meta
 
