@@ -2,7 +2,7 @@
   lib,
   pyproject-nix,
   lock1,
-  build,
+  overlays,
   ...
 }:
 
@@ -22,7 +22,6 @@ let
     fix
     mapAttrs
     attrNames
-    all
     unique
     foldl'
     isPath
@@ -37,14 +36,12 @@ let
     groupBy
     head
     isString
-    composeExtensions
     optionalString
     inPureEvalMode
     hasPrefix
     ;
   inherit (builtins) readDir hasContext;
-  inherit (pyproject-nix.lib.project) loadUVPyproject; # Note: Maybe we want a loader that will just "remap-all-the-things" into standard attributes?
-  inherit (pyproject-nix.lib) pep440 pep508;
+  inherit (pyproject-nix.lib.project) loadUVPyproject;
 
   # Match str against a glob pattern
   globMatches =
@@ -137,55 +134,6 @@ fix (self: {
         else
           throw "No sourcePreference was passed, and could not be automatically inferred from workspace config";
 
-      mkOverlay' =
-        {
-          sourcePreference,
-          environ,
-          spec,
-        }:
-        final: prev:
-        let
-          inherit (final) callPackage;
-
-          # Note: Using Python from final here causes infinite recursion.
-          # There is no correct way to override the python interpreter from within the set anyway,
-          # so all facts that we get from the interpreter derivation are still the same.
-          environ' = pep508.setEnviron (pep508.mkEnviron prev.python) environ;
-          pythonVersion = environ'.python_full_version.value;
-
-          resolved = lock1.resolveDependencies {
-            lock = lock1.filterConflicts {
-              lock = uvLock;
-              inherit spec;
-            };
-            environ = environ';
-            dependencies = attrNames spec;
-          };
-
-          buildRemotePackage = build.remote {
-            inherit workspaceRoot;
-            config = config';
-            defaultSourcePreference = sourcePreference;
-          };
-
-        in
-        # Assert that requires-python from uv.lock is compatible with this interpreter
-        assert all (spec: pep440.comparators.${spec.op} pythonVersion spec.version) uvLock.requires-python;
-        # Assert that supported-environments is compatible with this environment
-        assert all (marker: pep508.evalMarkers environ' marker) (attrValues uvLock.supported-markers);
-        mapAttrs (
-          name: package:
-          # Call different builder functions depending on if package is local or remote (pypi)
-          if workspaceProjects ? ${name} then
-            callPackage (build.local {
-              environ = environ';
-              localProject = workspaceProjects.${name};
-              inherit package;
-            }) { }
-          else
-            callPackage (buildRemotePackage package) { }
-        ) resolved;
-
     in
     assert assertMsg (
       !(config'.no-binary && config'.no-build)
@@ -217,25 +165,13 @@ fix (self: {
           # By default mkPyprojectOverlay resolves the entire workspace, but that will not work for resolutions with conflicts.
           dependencies ? deps.all,
         }:
-        let
-          overlay = mkOverlay' {
-            inherit sourcePreference environ;
-            spec = dependencies;
-          };
-          crossOverlay = composeExtensions (_final: prev: {
-            pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;
-          }) overlay;
-        in
-        final: prev:
-        let
-          inherit (prev) stdenv;
-        in
-        # When doing native compilation pyproject.nix aliases pythonPkgsBuildHost to pythonPkgsHostHost
-        # for performance reasons.
-        #
-        # Mirror this behaviour by overriding both sets when cross compiling, but only override the
-        # build host when doing native compilation.
-        if stdenv.buildPlatform != stdenv.hostPlatform then crossOverlay final prev else overlay final prev;
+        overlays.mkOverlay {
+          inherit sourcePreference environ workspaceRoot;
+          lock = uvLock;
+          localPackages = workspaceProjects;
+          spec = dependencies;
+          config = config';
+        };
 
       /*
         Generate an overlay to use with pyproject.nix's build infrastructure to install dependencies in editable mode.
