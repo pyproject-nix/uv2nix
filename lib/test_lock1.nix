@@ -123,6 +123,18 @@ in
     };
   };
 
+  getLocalProjects = {
+    testTrivial = {
+      expr = lib.attrNames (
+        lock1.getLocalProjects {
+          lock = locks.trivial;
+          workspaceRoot = ./fixtures/trivial;
+        }
+      );
+      expected = [ "trivial" ];
+    };
+  };
+
   parsePackage =
     let
       parsePkg = name: fixture: lock1.parsePackage { } (findFirstPkg name fixture.package);

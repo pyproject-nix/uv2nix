@@ -284,4 +284,42 @@ let
 in
 # Generate test matrix:
 # builder impl  -> sourcePreference
-mkChecks "wheel" // mkChecks "sdist"
+mkChecks "wheel"
+// mkChecks "sdist"
+// {
+
+  scripts =
+    let
+      script = uv2nix.scripts.loadScript { script = ../lib/fixtures/inline-metadata/trivial.py; };
+
+      overlay = script.mkOverlay {
+        sourcePreference = "wheel";
+      };
+
+      python = pkgs.python312;
+
+      baseSet = pkgs.callPackage pyproject-nix.build.packages {
+        inherit python;
+      };
+
+      pythonSet = baseSet.overrideScope (
+        lib.composeManyExtensions [
+          buildSystems
+          overlay
+          buildSystemOverrides
+        ]
+      );
+
+      pythonEnv = script.mkVirtualEnv {
+        inherit pythonSet;
+      };
+
+      script' = pkgs.writeScript script.name (script.renderScript { venv = pythonEnv; });
+
+    in
+    pkgs.runCommand "script-test" { } ''
+      ${script'} > /dev/null
+      touch $out
+    '';
+
+}

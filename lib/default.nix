@@ -10,5 +10,6 @@ fix (
     workspace = ./workspace.nix;
     build = ./build.nix;
     overlays = ./overlays.nix;
+    scripts = ./scripts.nix;
   }
 )

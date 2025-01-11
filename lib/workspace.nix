@@ -1,6 +1,5 @@
 {
   lib,
-  pyproject-nix,
   lock1,
   overlays,
   ...
@@ -41,7 +40,6 @@ let
     hasPrefix
     ;
   inherit (builtins) readDir hasContext;
-  inherit (pyproject-nix.lib.project) loadUVPyproject;
 
   # Match str against a glob pattern
   globMatches =
@@ -100,18 +98,10 @@ fix (self: {
 
       localPackages = filter lock1.isLocalPackage uvLock.package;
 
-      workspaceProjects = listToAttrs (
-        map (
-          package:
-          nameValuePair package.name (loadUVPyproject {
-            projectRoot =
-              let
-                localPath = lock1.getLocalPath package;
-              in
-              if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
-          })
-        ) localPackages
-      );
+      workspaceProjects = lock1.getLocalProjects {
+        lock = uvLock;
+        inherit localPackages workspaceRoot;
+      };
 
       # Load supported tool.uv settings
       loadedConfig = self.loadConfig (
@@ -167,9 +157,9 @@ fix (self: {
         }:
         overlays.mkOverlay {
           inherit sourcePreference environ workspaceRoot;
-          lock = uvLock;
-          localPackages = workspaceProjects;
+          localProjects = workspaceProjects;
           spec = dependencies;
+          lock = uvLock;
           config = config';
         };
 
