@@ -39,6 +39,7 @@ stdenv.mkDerivation (
     '';
 
     meta = {
+      mainProgram = "uv";
       license = [
         lib.licenses.asl20
         lib.licenses.mit
