@@ -341,7 +341,31 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          editablePythonSet = pythonSets.${system}.overrideScope editableOverlay;
+
+          editablePythonSet = pythonSets.${system}.overrideScope (
+            lib.composeManyExtensions [
+              editableOverlay
+
+              (final: prev: {
+                django-webapp = prev.django-webapp.overrideAttrs (old: {
+                  src = lib.fileset.toSource {
+                    root = old.src;
+                    fileset = lib.fileset.unions [
+                      (old.src + "/pyproject.toml")
+                      (old.src + "/README.md")
+                      (old.src + "/src/django_webapp/__init__.py")
+                    ];
+                  };
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+              })
+            ]
+          );
+
           venv = editablePythonSet.mkVirtualEnv "django-webapp-dev-env" {
             django-webapp = [ "dev" ];
           };
