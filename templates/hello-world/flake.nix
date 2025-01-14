@@ -144,7 +144,40 @@
             };
 
             # Override previous set with our overrideable overlay.
-            editablePythonSet = pythonSet.overrideScope editableOverlay;
+            editablePythonSet = pythonSet.overrideScope (
+              lib.composeManyExtensions [
+                editableOverlay
+
+                # Apply fixups for building an editable package of your workspace packages
+                (final: prev: {
+                  hello-world = prev.hello-world.overrideAttrs (old: {
+                    # It's a good idea to filter the sources going into an editable build
+                    # so the editable package doesn't have to be rebuilt on every change.
+                    src = lib.fileset.toSource {
+                      root = old.src;
+                      fileset = lib.fileset.unions [
+                        (old.src + "/pyproject.toml")
+                        (old.src + "/README.md")
+                        (old.src + "/src/hello_world/__init__.py")
+                      ];
+                    };
+
+                    # Hatchling (our build system) has a dependency on the `editables` package when building editables.
+                    #
+                    # In normal Python flows this dependency is dynamically handled, and doesn't need to be explicitly declared.
+                    # This behaviour is documented in PEP-660.
+                    #
+                    # With Nix the dependency needs to be explicitly declared.
+                    nativeBuildInputs =
+                      old.nativeBuildInputs
+                      ++ final.resolveBuildSystem {
+                        editables = [ ];
+                      };
+                  });
+
+                })
+              ]
+            );
 
             # Build virtual environment, with local packages being editable.
             #

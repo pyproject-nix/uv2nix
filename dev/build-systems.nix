@@ -585,6 +585,91 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         };
     });
 
+  setuptools-rust =
+    {
+      stdenv,
+      lib,
+      python,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.setuptools-rust)
+        pname
+        version
+        src
+        meta
+        ;
+
+      passthru.dependencies =
+        {
+          semantic-version = [ ];
+          setuptools = [ ];
+          typing-extensions = [ ];
+        }
+        // lib.optionalAttrs (python.pythonOlder "3.11") {
+          tomli = [ ];
+        };
+
+      nativeBuildInputs =
+        [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem {
+          setuptools = [ ];
+          setuptools-scm = [ ];
+        };
+    };
+
+  semantic-version =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.semantic-version)
+        pname
+        version
+        src
+        meta
+        ;
+
+      nativeBuildInputs =
+        [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem {
+          setuptools = [ ];
+        };
+    };
+
+  typing-extensions =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.typing-extensions)
+        pname
+        version
+        src
+        meta
+        ;
+
+      nativeBuildInputs =
+        [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem {
+          flit-core = [ ];
+        };
+    };
+
   pathspec =
     {
       stdenv,
@@ -594,6 +679,89 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
     }:
     stdenv.mkDerivation {
       inherit (python3Packages.pathspec)
+        pname
+        version
+        src
+        meta
+        ;
+
+      nativeBuildInputs =
+        [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem {
+          flit-core = [ ];
+        };
+    };
+
+  libcst =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+      rustPlatform,
+      cargo,
+      rustc,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.libcst)
+        name
+        pname
+        src
+        version
+        cargoDeps
+        cargoRoot
+        ;
+      passthru.dependencies = {
+        pyyaml = [ ];
+      };
+      nativeBuildInputs =
+        [
+          pyprojectHook
+          rustPlatform.cargoSetupHook
+          cargo
+          rustc
+        ]
+        ++ resolveBuildSystem {
+          setuptools = [ ];
+          setuptools-rust = [ ];
+        };
+    };
+
+  pyyaml =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.pyyaml)
+        pname
+        version
+        src
+        meta
+        ;
+
+      nativeBuildInputs =
+        [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem {
+          setuptools = [ ];
+        };
+    };
+
+  editables =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectHook,
+      resolveBuildSystem,
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.editables)
         pname
         version
         src

@@ -259,6 +259,23 @@ let
               overlay
               buildSystemOverrides
               editableOverlay
+              (final: prev: {
+                workspace = prev.workspace.overrideAttrs (old: {
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+
+                workspace-package = prev.workspace-package.overrideAttrs (old: {
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+              })
             ]
           );
 
@@ -273,6 +290,7 @@ let
           }
           ''
             cp -r ${workspaceRoot}/* .
+
             chmod +w .*
             test "$(python -c 'import workspace_package; print(workspace_package.hello())')" = "Hello from workspace-package!"
             substituteInPlace ./packages/workspace-package/src/workspace_package/__init__.py --replace-fail workspace-package mutable-package

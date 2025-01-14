@@ -128,10 +128,9 @@ in
     }:
     {
       stdenv,
-      python,
       pyprojectHook,
+      pyprojectEditableHook,
       resolveBuildSystem,
-      pythonPkgsBuildHost,
       # Editable root as a string
       editableRoot ? null,
       darwinMinVersionHook ? null,
@@ -155,16 +154,10 @@ in
               project = localProject;
               inherit environ;
               root = editableRoot;
-              projectOverrides = {
-                # Use dynamic metadata field
-                inherit (package) version;
-              };
             }
             {
               inherit
-                python
-                pyprojectHook
-                pythonPkgsBuildHost
+                pyprojectEditableHook
                 resolveBuildSystem
                 ;
 

@@ -30,7 +30,6 @@ let
     isFunction
     nameValuePair
     listToAttrs
-    pathExists
     removePrefix
     groupBy
     head
@@ -195,15 +194,11 @@ fix (self: {
             name:
             nameValuePair name (
               prev.${name}.override {
-                # Prefer src layout if available
                 editableRoot =
                   let
                     inherit (workspaceProjects.${name}) projectRoot;
                   in
-                  root
-                  + (removePrefix (toString workspaceRoot) (
-                    toString (if pathExists (projectRoot + "/src") then (projectRoot + "/src") else projectRoot)
-                  ));
+                  root + (removePrefix (toString workspaceRoot) (toString projectRoot));
               }
             )
           ) activeMembers
