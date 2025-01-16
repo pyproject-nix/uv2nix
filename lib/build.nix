@@ -167,8 +167,7 @@ in
     stdenv.mkDerivation (
       attrs
       // {
-        # Take potentially dynamic fields from uv.lock package
-        inherit (package) version;
+        version = "0.0.0";
 
         buildInputs =
           (attrs.buildInputs or [ ])
@@ -183,6 +182,10 @@ in
           optional-dependencies = mapAttrs (_: mkSpec) package.optional-dependencies;
           dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
         };
+      }
+      // optionalAttrs (package ? version) {
+        # Take potentially dynamic fields from uv.lock package
+        inherit (package) version;
       }
     );
 
@@ -357,7 +360,8 @@ in
     stdenv.mkDerivation (
       {
         pname = package.name;
-        inherit (package) version;
+        version = "0.0.0";
+
         inherit src;
 
         passthru = {
@@ -372,6 +376,10 @@ in
           ++ optional (format == "pyproject") pyprojectHook
           ++ optional (format == "wheel") pyprojectWheelHook
           ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook;
+      }
+      // optionalAttrs (package ? version) {
+        # Take potentially dynamic fields from uv.lock package
+        inherit (package) version;
       }
       // optionalAttrs (format == "wheel") {
         # Don't strip prebuilt wheels
