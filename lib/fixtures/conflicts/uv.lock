@@ -6,6 +6,9 @@ conflicts = [[
     { package = "conflicts", group = "group-c" },
 ]]
 
+[options]
+exclude-newer = "2025-01-08T03:51:18Z"
+
 [[package]]
 name = "arpeggio"
 version = "2.0.0"

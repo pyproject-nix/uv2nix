@@ -7,6 +7,9 @@ supported-markers = [
     "sys_platform == 'linux'",
 ]
 
+[options]
+exclude-newer = "2025-01-10T07:31:30Z"
+
 [[package]]
 name = "with-tool-uv-environments"
 version = "0.1.0"
