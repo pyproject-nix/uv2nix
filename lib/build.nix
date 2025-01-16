@@ -264,7 +264,7 @@ in
         if isURL then
           (
             # Package is sdist if the source file is present in the sdist attrset
-            if (source.url == package.sdist.url or null) then "pyproject" else "wheel"
+            if (package.sdist != { }) then "pyproject" else "wheel"
           )
         else if isPypi then
           (
@@ -310,7 +310,10 @@ in
             passthru.url = source.path;
           }
         else if (isPypi || isURL) && format == "pyproject" then
-          fetchurl { inherit (package.sdist) url hash; }
+          fetchurl {
+            url = package.source.url or package.sdist.url;
+            inherit (package.sdist) hash;
+          }
         else if isURL && format == "wheel" then
           let
             wheel = findFirst (
