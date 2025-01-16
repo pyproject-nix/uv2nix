@@ -1,6 +1,9 @@
 version = 1
 requires-python = ">=3.12"
 
+[options]
+exclude-newer = "2024-12-03T23:56:31Z"
+
 [[package]]
 name = "attrs"
 version = "23.1.0"
