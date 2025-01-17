@@ -426,8 +426,10 @@ fix (self: {
     in
     {
       name,
-      version,
       source,
+      # Uv doesn't put the version in the lock if it's dynamic
+      # Use a dummy version instead.
+      version ? "0.0.0",
       resolution-markers ? [ ],
       dependencies ? [ ],
       optional-dependencies ? { },

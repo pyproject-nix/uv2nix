@@ -231,6 +231,14 @@ let
         '';
       };
 
+      dynamicVersion = mkCheck {
+        name = "dynamic-version";
+        root = ../lib/fixtures/dynamic-version;
+        spec = {
+          dynamic-version = [ ];
+        };
+      };
+
       editable-workspace =
         let
           workspaceRoot = ../lib/fixtures/workspace;

@@ -1,0 +1,7 @@
+README.md
+hello.py
+pyproject.toml
+dynamic_version.egg-info/PKG-INFO
+dynamic_version.egg-info/SOURCES.txt
+dynamic_version.egg-info/dependency_links.txt
+dynamic_version.egg-info/top_level.txt

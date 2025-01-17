@@ -40,6 +40,7 @@ let
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
     conflicts = ./fixtures/conflicts;
+    dynamic-version = ./fixtures/dynamic-version;
   };
 
   projects = mapAttrs (
