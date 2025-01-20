@@ -19,6 +19,7 @@ let
     no-build = ./fixtures/no-build;
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
+    withLegacy = ./fixtures/workspace-with-legacy;
   };
 
 in
@@ -41,6 +42,7 @@ in
         "/packages/pkg-b"
       ];
       testWorkspaceExcluded = test ./fixtures/workspace-with-excluded [ "/packages/included-package" ];
+      testWorkspaceWithLegacy = test workspaces.withLegacy [ "/packages/workspace-package" "/" ];
     };
 
   loadConfig = lib.mapAttrs' (

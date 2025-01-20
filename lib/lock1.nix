@@ -457,6 +457,23 @@ fix (self: {
       dev-dependencies = mapAttrs (_: map parseDependency) dev-dependencies;
     };
 
+  /*
+    Generate fake pyproject.toml contents for a package entry.
+  */
+  buildFakePyproject = package: {
+    project = {
+      inherit (package) name version;
+    };
+    dependencies = map (
+      dep:
+      "${dep.name}==${dep.version or "*"} @ file://${self.getLocalPath package}${
+        if dep ? marker then
+          " ; ${dep.marker}"
+        else
+          ""
+      }");
+  };
+
   getLocalProjects =
     # Get local packages from lock as an attribute set of pyproject.nix projects
     {
@@ -466,13 +483,17 @@ fix (self: {
     }:
     listToAttrs (
       map (
-        package:
+        package: let
+          localPath = self.getLocalPath package;
+          projectRoot = if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
+          hasPyproject = builtins.pathExists (projectRoot + "/pyproject.toml");
+          fakeContents = self.buildFakePyproject package;
+          realContents = lib.importTOML (projectRoot + "/pyproject.toml");
+          validPyproject = (realContents.project or {}) ? name;
+        in
         nameValuePair package.name (loadUVPyproject {
-          projectRoot =
-            let
-              localPath = self.getLocalPath package;
-            in
-            if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
+          inherit projectRoot;
+          pyproject = if hasPyproject && validPyproject then realContents else fakeContents;
         })
       ) localPackages
     );

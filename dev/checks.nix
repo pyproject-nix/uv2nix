@@ -24,6 +24,7 @@ let
       check ? null,
       name ? throw "No name provided",
       environ ? { },
+      overlay ? final: prev: {},
     }:
     let
       ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
@@ -32,7 +33,7 @@ let
       pythonEnv =
         let
           # Generate overlay
-          overlay = ws.mkPyprojectOverlay (
+          pyprojectOverlay = ws.mkPyprojectOverlay (
             {
               inherit sourcePreference environ;
             }
@@ -49,6 +50,7 @@ let
               (
                 lib.composeManyExtensions [
                   buildSystems
+                  pyprojectOverlay
                   overlay
                   buildSystemOverrides
                 ]
@@ -306,6 +308,25 @@ let
             touch $out
           '';
 
+      workspace-with-legacy = mkCheck {
+        name = "conflicts-group-b";
+        root = ../lib/fixtures/workspace-with-legacy;
+        spec = {
+          workspace = [ ];
+        };
+        overlay = final: prev: {
+          legacy-package = prev.legacy-package.overrideAttrs (old: {
+            nativeBuildInputs =
+              old.nativeBuildInputs
+              ++ final.resolveBuildSystem {
+                setuptools = [ ];
+              };
+          });
+        };
+        check = ''
+          test "$(python -c 'import workspace')" == "workspace-package legacy-package workspace"
+        '';
+      };
     };
 in
 # Generate test matrix:
