@@ -306,6 +306,16 @@ let
             touch $out
           '';
 
+      workspace-with-legacy = mkCheck {
+        name = "conflicts-group-b";
+        root = ../lib/fixtures/workspace-with-legacy;
+        spec = {
+          workspace-with-legacy = [ ];
+        };
+        check = ''
+          test "$(python -c 'import workspace_with_legacy')" == "legacy-package"
+        '';
+      };
     };
 in
 # Generate test matrix:

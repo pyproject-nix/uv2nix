@@ -19,6 +19,7 @@ let
     no-build = ./fixtures/no-build;
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
+    withLegacy = ./fixtures/workspace-with-legacy;
   };
 
 in
