@@ -167,8 +167,6 @@ in
     stdenv.mkDerivation (
       attrs
       // {
-        version = "0.0.0";
-
         buildInputs =
           (attrs.buildInputs or [ ])
           ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
@@ -183,9 +181,9 @@ in
           dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
         };
       }
-      // optionalAttrs (package ? version) {
-        # Take potentially dynamic fields from uv.lock package
+      // {
         inherit (package) version;
+        pname = package.name;
       }
     );
 

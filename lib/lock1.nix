@@ -458,7 +458,7 @@ fix (self: {
     };
 
   getLocalProjects =
-    # Get local packages from lock as an attribute set of pyproject.nix projects
+    # Get local packages from lock as an attribute set of pyproject.nix projects.
     {
       lock,
       workspaceRoot,
@@ -467,13 +467,33 @@ fix (self: {
     listToAttrs (
       map (
         package:
-        nameValuePair package.name (loadUVPyproject {
-          projectRoot =
-            let
-              localPath = self.getLocalPath package;
-            in
-            if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
-        })
+        let
+          localPath = self.getLocalPath package;
+          projectRoot = if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
+        in
+        nameValuePair package.name (
+          if (lib.pathExists (projectRoot + "/pyproject.toml")) then
+            (loadUVPyproject {
+              inherit projectRoot;
+            })
+          else
+            # Return an empty dummy project for projects that have no pyproject.toml in the root.
+            {
+              dependencies = rec {
+                # Return empty list of build-systems to trigger legacy fallback lookup.
+                build-systems = [ ];
+                # None of these fields should be accessed because dependencies are taken from uv.lock.
+                # Taint them to ensure we don't accidentally rely on them.
+                dependencies = throw "internal error: accessed dependencies from pyproject.nix project, not uv.lock";
+                extras = dependencies;
+                groups = dependencies;
+
+              };
+              pyproject = { }; # The unmarshaled contents of pyproject.toml
+              inherit projectRoot; # Path to project root
+              requires-python = null; # requires-python as parsed by pep621.parseRequiresPython
+            }
+        )
       ) localPackages
     );
 })
