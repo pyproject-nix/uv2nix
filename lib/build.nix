@@ -36,21 +36,15 @@ let
   parseGitURL =
     url:
     let
-      # No query params
-      m1 = match "([^#]+)#(.+)" url;
-
       # With query params
-      m2 = match "([^?]+)\\?([^#]+)#(.+)" url;
+      m1 = match "([^?]+)\\?([^#]+)#(.+)" url;
+
+      # No query params
+      m2 = match "([^#]+)#(.+)" url;
     in
     if m1 != null then
       {
         url = elemAt m1 0;
-        query = { };
-        fragment = elemAt m1 1;
-      }
-    else if m2 != null then
-      {
-        url = elemAt m2 0;
         query = listToAttrs (
           map (
             s:
@@ -59,9 +53,15 @@ let
             in
             assert length parts == 2;
             nameValuePair (elemAt parts 0) (elemAt parts 1)
-          ) (splitString "&" (elemAt m2 1))
+          ) (splitString "&" (elemAt m1 1))
         );
-        fragment = elemAt m2 2;
+        fragment = elemAt m1 2;
+      }
+    else if m2 != null then
+      {
+        url = elemAt m2 0;
+        query = { };
+        fragment = elemAt m2 1;
       }
     else
       throw "Could not parse git url: ${url}";
@@ -284,24 +284,21 @@ in
         else
           "pyproject";
 
+      gitURL = parseGitURL source.git;
+
       src =
         if isGit then
-          (
-            let
-              parsed = parseGitURL source.git;
-            in
-            fetchGit (
-              {
-                inherit (parsed) url;
-                rev = parsed.fragment;
-              }
-              // optionalAttrs (parsed ? query.tag) { ref = "refs/tags/${parsed.query.tag}"; }
-              // optionalAttrs (versionAtLeast nixVersion "2.4") {
-                allRefs = true;
-                submodules = true;
-              }
-            )
-          )
+          (fetchGit (
+            {
+              inherit (gitURL) url;
+              rev = gitURL.fragment;
+            }
+            // optionalAttrs (gitURL ? query.tag) { ref = "refs/tags/${gitURL.query.tag}"; }
+            // optionalAttrs (versionAtLeast nixVersion "2.4") {
+              allRefs = true;
+              submodules = true;
+            }
+          ))
         else if isPath then
           {
             outPath = "${workspaceRoot + "/${source.path}"}";
@@ -411,6 +408,9 @@ in
           ++ (optional (stdenv.isDarwin && darwinMinVersionHook != null) (
             darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion
           ));
+      }
+      // optionalAttrs (isGit && gitURL ? query.subdirectory) {
+        sourceRoot = "source/${gitURL.query.subdirectory}";
       }
     );
 }

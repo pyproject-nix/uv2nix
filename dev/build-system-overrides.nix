@@ -19,6 +19,21 @@ let
       hatch-vcs = [ ];
       hatch-fancy-pypi-readme = [ ];
     };
+    hatchling = {
+      pathspec = [ ];
+      pluggy = [ ];
+      packaging = [ ];
+      trove-classifiers = [ ];
+    };
+    pathspec = {
+      flit-core = [ ];
+    };
+    pluggy = {
+      setuptools = [ ];
+    };
+    trove-classifiers = {
+      setuptools = [ ];
+    };
     tomli.flit-core = [ ];
     coverage.setuptools = [ ];
     blinker.setuptools = [ ];

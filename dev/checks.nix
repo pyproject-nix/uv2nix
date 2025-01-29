@@ -239,6 +239,14 @@ let
         };
       };
 
+      gitSubdirectory = mkCheck {
+        name = "git-subdirectory";
+        root = ../lib/fixtures/git-subdirectory;
+        spec = {
+          git-subdirectory = [ ];
+        };
+      };
+
       editable-workspace =
         let
           workspaceRoot = ../lib/fixtures/workspace;
