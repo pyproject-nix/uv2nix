@@ -75,8 +75,10 @@ let
     sourcePreference:
     let
       mkCheck = mkCheck' sourcePreference;
+      nameSuffix = if sourcePreference == "wheel" then "" else "-pref-${sourcePreference}";
+
     in
-    mapAttrs' (name: v: nameValuePair "${name}-pref-${sourcePreference}" v) {
+    mapAttrs' (name: v: nameValuePair "${name}${nameSuffix}" v) {
       trivial = mkCheck {
         root = ../lib/fixtures/trivial;
         spec = {
@@ -84,6 +86,21 @@ let
         };
       };
 
+      kitchenSinkA = mkCheck {
+        root = ../lib/fixtures/kitchen-sink/a;
+        spec = {
+          a = [ ];
+        };
+      };
+
+      onlyWheels = mkCheck {
+        root = ../lib/fixtures/only-wheels;
+        spec = {
+          hgtk = [ ];
+        };
+      };
+    }
+    // lib.optionalAttrs (sourcePreference != "wheel") {
       virtual = mkCheck {
         root = ../lib/fixtures/virtual;
         spec = {
@@ -107,7 +124,6 @@ let
         };
       };
 
-      # Note: Kitchen sink example can't be fully tested until
       kitchenSinkA = mkCheck {
         root = ../lib/fixtures/kitchen-sink/a;
         spec = {
@@ -146,13 +162,6 @@ let
         check = ''
           python -c "import socks"
         '';
-      };
-
-      onlyWheels = mkCheck {
-        root = ../lib/fixtures/only-wheels;
-        spec = {
-          hgtk = [ ];
-        };
       };
 
       testMultiChoicePackageNoMarker = mkCheck {
