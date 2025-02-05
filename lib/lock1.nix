@@ -5,7 +5,12 @@ let
   inherit (pyproject-nix.lib.pep508) parseMarkers evalMarkers;
   inherit (pyproject-nix.lib.pypa) parseWheelFileName;
   inherit (pyproject-nix.lib) pep440;
-  inherit (builtins) baseNameOf toJSON partition;
+  inherit (builtins)
+    baseNameOf
+    toJSON
+    partition
+    readDir
+    ;
   inherit (lib)
     mapAttrs
     fix
@@ -477,22 +482,31 @@ fix (self: {
               inherit projectRoot;
             })
           else
-            # Return an empty dummy project for projects that have no pyproject.toml in the root.
-            {
-              dependencies = rec {
-                # Return empty list of build-systems to trigger legacy fallback lookup.
-                build-systems = [ ];
-                # None of these fields should be accessed because dependencies are taken from uv.lock.
-                # Taint them to ensure we don't accidentally rely on them.
-                dependencies = throw "internal error: accessed dependencies from pyproject.nix project, not uv.lock";
-                extras = dependencies;
-                groups = dependencies;
+            # When using submodules with Flakes users need to pass submodules=1 to `nix develop`.
+            # If this is _not_ passed users will end up with an empty directory instead, which triggers
+            # accessing the tainted attributes below.
+            lib.throwIf (readDir projectRoot == { })
+              ''
+                Project root for package '${package.name}' is empty.
 
-              };
-              pyproject = { }; # The unmarshaled contents of pyproject.toml
-              inherit projectRoot; # Path to project root
-              requires-python = null; # requires-python as parsed by pep621.parseRequiresPython
-            }
+                This can happen when using Git submodules within a Flake without passing submodules=1 to `nix develop`.
+              ''
+              # Return an empty dummy project for projects that have no pyproject.toml in the root.
+              {
+                dependencies = rec {
+                  # Return empty list of build-systems to trigger legacy fallback lookup.
+                  build-systems = [ ];
+                  # None of these fields should be accessed because dependencies are taken from uv.lock.
+                  # Taint them to ensure we don't accidentally rely on them.
+                  dependencies = throw "internal error: accessed dependencies from pyproject.nix project, not uv.lock";
+                  extras = dependencies;
+                  groups = dependencies;
+
+                };
+                pyproject = { }; # The unmarshaled contents of pyproject.toml
+                inherit projectRoot; # Path to project root
+                requires-python = null; # requires-python as parsed by pep621.parseRequiresPython
+              }
         )
       ) localPackages
     );
