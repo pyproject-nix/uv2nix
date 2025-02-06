@@ -34,6 +34,7 @@ let
     throwIf
     filterAttrs
     nameValuePair
+    pathExists
     ;
 
 in
@@ -477,7 +478,7 @@ fix (self: {
           projectRoot = if localPath == "." then workspaceRoot else workspaceRoot + "/${localPath}";
         in
         nameValuePair package.name (
-          if (lib.pathExists (projectRoot + "/pyproject.toml")) then
+          if (pathExists (projectRoot + "/pyproject.toml")) then
             (loadUVPyproject {
               inherit projectRoot;
             })
@@ -485,7 +486,7 @@ fix (self: {
             # When using submodules with Flakes users need to pass submodules=1 to `nix develop`.
             # If this is _not_ passed users will end up with an empty directory instead, which triggers
             # accessing the tainted attributes below.
-            lib.throwIf (readDir projectRoot == { })
+            throwIf (pathExists projectRoot && readDir projectRoot == { })
               ''
                 Project root for package '${package.name}' is empty.
 
