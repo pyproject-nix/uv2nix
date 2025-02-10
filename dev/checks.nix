@@ -370,9 +370,37 @@ mkChecks "wheel"
             ]
           );
     in
-    pythonSet.mkVirtualEnv "test-cross-venv" {
-      a = [ ];
-    };
+      pythonSet.charset-normalizer;
+
+  cross-venv =
+    let
+      root = ../lib/fixtures/trivial;
+
+      pkgsCross = pkgs.pkgsCross.aarch64-multiplatform;
+
+      ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
+
+      overlay = ws.mkPyprojectOverlay {
+        sourcePreference = "wheel";
+      };
+
+      interpreter = pkgsCross.python3;
+
+      pythonSet =
+        (pkgsCross.callPackage pyproject-nix.build.packages {
+          python = interpreter;
+        }).overrideScope
+          (
+            lib.composeManyExtensions [
+              buildSystems
+              overlay
+              buildSystemOverrides
+            ]
+          );
+    in
+      pythonSet.mkVirtualEnv "cross-venv" {
+        trivial = [ ];
+      };
 
   scripts =
     let
