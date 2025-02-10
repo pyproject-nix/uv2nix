@@ -112,6 +112,7 @@ in
       };
       crossOverlay = composeExtensions (_final: prev: {
         pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;
+        pythonPkgsHostHost = prev.pythonPkgsHostHost.overrideScope overlay;
       }) overlay;
     in
     final: prev:

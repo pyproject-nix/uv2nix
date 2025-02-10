@@ -11,7 +11,10 @@ let
     nameValuePair
     ;
 
-  buildSystems = import ./build-systems.nix;
+  buildSystems' = import ./build-systems.nix;
+  buildSystems = lib.composeExtensions (_final: prev: {
+    pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope buildSystems';
+  }) buildSystems';
 
   buildSystemOverrides = import ./build-system-overrides.nix;
 
@@ -340,6 +343,36 @@ in
 mkChecks "wheel"
 // mkChecks "sdist"
 // {
+
+  cross =
+    let
+      root = ../lib/fixtures/kitchen-sink/a;
+
+      pkgsCross = pkgs.pkgsCross.aarch64-multiplatform;
+
+      ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
+
+      overlay = ws.mkPyprojectOverlay {
+        sourcePreference = "wheel";
+      };
+
+      interpreter = pkgsCross.python3;
+
+      pythonSet =
+        (pkgsCross.callPackage pyproject-nix.build.packages {
+          python = interpreter;
+        }).overrideScope
+          (
+            lib.composeManyExtensions [
+              buildSystems
+              overlay
+              buildSystemOverrides
+            ]
+          );
+    in
+    pythonSet.mkVirtualEnv "test-cross-venv" {
+      a = [ ];
+    };
 
   scripts =
     let
