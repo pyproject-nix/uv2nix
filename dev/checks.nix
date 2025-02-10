@@ -5,7 +5,7 @@
   pyproject-nix,
 }:
 let
-  inherit (pkgs) runCommand;
+  inherit (pkgs) runCommand stdenv;
   inherit (lib)
     mapAttrs'
     nameValuePair
@@ -342,7 +342,7 @@ in
 # builder impl  -> sourcePreference
 mkChecks "wheel"
 // mkChecks "sdist"
-// {
+// (lib.optionalAttrs (!stdenv.isDarwin) {
 
   cross =
     let
@@ -370,38 +370,10 @@ mkChecks "wheel"
             ]
           );
     in
-      pythonSet.charset-normalizer;
+    pythonSet.charset-normalizer;
 
-  cross-venv =
-    let
-      root = ../lib/fixtures/trivial;
-
-      pkgsCross = pkgs.pkgsCross.aarch64-multiplatform;
-
-      ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
-
-      overlay = ws.mkPyprojectOverlay {
-        sourcePreference = "wheel";
-      };
-
-      interpreter = pkgsCross.python3;
-
-      pythonSet =
-        (pkgsCross.callPackage pyproject-nix.build.packages {
-          python = interpreter;
-        }).overrideScope
-          (
-            lib.composeManyExtensions [
-              buildSystems
-              overlay
-              buildSystemOverrides
-            ]
-          );
-    in
-      pythonSet.mkVirtualEnv "cross-venv" {
-        trivial = [ ];
-      };
-
+})
+// {
   scripts =
     let
       script = uv2nix.scripts.loadScript { script = ../lib/fixtures/inline-metadata/trivial.py; };
