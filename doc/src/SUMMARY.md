@@ -15,6 +15,7 @@
   - [Development scripts](./patterns/scripts.md)
   - [Using `meta`](./patterns/meta.md)
   - [Shipping applications](./patterns/applications.md)
+  - [Cross compilation](./patterns/cross/index.md)
 
 - [Platform quirks](./platform-quirks.md)
 
