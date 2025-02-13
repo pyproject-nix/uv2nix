@@ -16,6 +16,7 @@
   - [Using `meta`](./patterns/meta.md)
   - [Shipping applications](./patterns/applications.md)
   - [Cross compilation](./patterns/cross/index.md)
+  - [Building wheels/sdists](./patterns/dist.md)
 
 - [Platform quirks](./platform-quirks.md)
 
