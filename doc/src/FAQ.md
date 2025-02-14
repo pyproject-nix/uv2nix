@@ -4,7 +4,7 @@
 
 `uv2nix` can only work with what it has, and `uv.lock` metadata is notably absent of important metadata.
 
-For more details see [overriding](./usage/overriding.md).
+For more details see [overriding](./overriding/index.md).
 
 ## Why doesn't uv2nix come with overrides?
 
