@@ -298,6 +298,7 @@ fix (self: {
       supported-markers ? [ ],
       options ? { },
       conflicts ? [ ],
+      ...
     }:
     assert version == 1;
     fix (toplevel: {
