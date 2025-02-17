@@ -1,6 +1,9 @@
 version = 1
 requires-python = ">=3.12"
 
+[options]
+exclude-newer = "2025-01-29T22:40:22Z"
+
 [[package]]
 name = "git-subdirectory"
 version = "0.1.0"

@@ -1,6 +1,9 @@
 version = 1
 requires-python = ">=3.12"
 
+[options]
+exclude-newer = "2025-01-17T01:09:31Z"
+
 [[package]]
 name = "dynamic-version"
 source = { virtual = "." }

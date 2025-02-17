@@ -298,6 +298,7 @@ fix (self: {
       supported-markers ? [ ],
       options ? { },
       conflicts ? [ ],
+      revision ? 0
     }:
     assert version == 1;
     fix (toplevel: {
@@ -314,6 +315,7 @@ fix (self: {
         map (markers: nameValuePair markers (parseMarkers markers)) supported-markers
       );
       options = parseOptions options;
+      inherit revision;
     });
 
   parseManifest =

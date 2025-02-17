@@ -4,7 +4,7 @@
     "members": []
   },
   "options": {
-    "exclude-newer": null,
+    "exclude-newer": "2025-01-17T01:09:31Z",
     "prerelease-mode": null,
     "resolution-mode": null
   },
@@ -26,6 +26,7 @@
     }
   ],
   "resolution-markers": {},
+  "revision": 0,
   "supported-markers": {},
   "version": 1
 }
