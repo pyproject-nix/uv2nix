@@ -8,6 +8,7 @@
     "prerelease-mode": null,
     "resolution-mode": null
   },
+  "required-markers": {},
   "requires-python": [
     {
       "op": ">=",

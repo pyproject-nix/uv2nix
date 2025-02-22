@@ -296,9 +296,10 @@ fix (self: {
       package ? [ ],
       resolution-markers ? [ ],
       supported-markers ? [ ],
+      required-markers ? [ ],
       options ? { },
       conflicts ? [ ],
-      revision ? 0
+      revision ? 0,
     }:
     assert version == 1;
     fix (toplevel: {
@@ -313,6 +314,9 @@ fix (self: {
       );
       supported-markers = listToAttrs (
         map (markers: nameValuePair markers (parseMarkers markers)) supported-markers
+      );
+      required-markers = listToAttrs (
+        map (markers: nameValuePair markers (parseMarkers markers)) required-markers
       );
       options = parseOptions options;
       inherit revision;
@@ -405,11 +409,14 @@ fix (self: {
     {
       resolution-markers ? { },
       supported-markers ? { },
+      required-markers ? { },
     }:
     let
       # Parse marker, but avoid parsing markers already present in toplevel uv.lock marker fields
       parseMarker =
-        marker: resolution-markers.${marker} or supported-markers.${marker} or (parseMarkers marker);
+        marker:
+        resolution-markers.${marker} or supported-markers.${marker} or required-markers.${marker}
+          or (parseMarkers marker);
       inherit (pep440) parseVersion;
 
       parseDependency =

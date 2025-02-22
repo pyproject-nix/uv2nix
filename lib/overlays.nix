@@ -12,6 +12,7 @@ let
     all
     attrValues
     mapAttrs
+    any
     ;
   inherit (pyproject-nix.lib) pep440 pep508;
 
@@ -53,7 +54,13 @@ let
     # Assert that requires-python from uv.lock is compatible with this interpreter
     assert all (spec: pep440.comparators.${spec.op} pythonVersion spec.version) uvLock.requires-python;
     # Assert that supported-environments is compatible with this environment
-    assert all (marker: pep508.evalMarkers environ' marker) (attrValues uvLock.supported-markers);
+    assert
+      uvLock.supported-markers != { }
+      -> any (marker: pep508.evalMarkers environ' marker) (attrValues uvLock.supported-markers);
+    # Assert that supported-environments is compatible with this environment
+    assert
+      uvLock.required-markers != { }
+      -> any (marker: pep508.evalMarkers environ' marker) (attrValues uvLock.required-markers);
     mapAttrs (
       name: package:
       # Call different builder functions depending on if package is local or remote (pypi)

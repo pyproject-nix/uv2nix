@@ -1,0 +1,146 @@
+{
+  "conflicts": [],
+  "manifest": {
+    "members": []
+  },
+  "options": {
+    "exclude-newer": null,
+    "prerelease-mode": null,
+    "resolution-mode": null
+  },
+  "required-markers": {
+    "platform_machine == 'aarch64' and sys_platform == 'linux'": {
+      "lhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "platform_machine"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "aarch64"
+        },
+        "type": "compare"
+      },
+      "op": "and",
+      "rhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "sys_platform"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "linux"
+        },
+        "type": "compare"
+      },
+      "type": "boolOp"
+    },
+    "platform_machine == 'arm64' and sys_platform == 'darwin'": {
+      "lhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "platform_machine"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "arm64"
+        },
+        "type": "compare"
+      },
+      "op": "and",
+      "rhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "sys_platform"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "darwin"
+        },
+        "type": "compare"
+      },
+      "type": "boolOp"
+    },
+    "platform_machine == 'x86_64' and sys_platform == 'darwin'": {
+      "lhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "platform_machine"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "x86_64"
+        },
+        "type": "compare"
+      },
+      "op": "and",
+      "rhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "sys_platform"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "darwin"
+        },
+        "type": "compare"
+      },
+      "type": "boolOp"
+    },
+    "platform_machine == 'x86_64' and sys_platform == 'linux'": {
+      "lhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "platform_machine"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "x86_64"
+        },
+        "type": "compare"
+      },
+      "op": "and",
+      "rhs": {
+        "lhs": {
+          "type": "variable",
+          "value": "sys_platform"
+        },
+        "op": "==",
+        "rhs": {
+          "type": "string",
+          "value": "linux"
+        },
+        "type": "compare"
+      },
+      "type": "boolOp"
+    }
+  },
+  "requires-python": [
+    {
+      "op": ">=",
+      "version": {
+        "dev": null,
+        "epoch": 0,
+        "local": null,
+        "post": null,
+        "pre": null,
+        "release": [
+          3,
+          12
+        ],
+        "str": "3.12"
+      }
+    }
+  ],
+  "resolution-markers": {},
+  "revision": 1,
+  "supported-markers": {},
+  "version": 1
+}
