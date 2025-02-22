@@ -35,6 +35,7 @@ let
     filterAttrs
     nameValuePair
     pathExists
+    unique
     ;
 
 in
@@ -302,25 +303,30 @@ fix (self: {
       revision ? 0,
     }:
     assert version == 1;
-    fix (toplevel: {
+    let
+      # Aggregate all lists of top level markers into a single top-level marker attrset
+      #
+      # This is so that we only have to parse a marker exactly once even if the marker is repeated
+      # across marker lists.
+      topLevelMarkers = listToAttrs (
+        map (markers: nameValuePair markers (parseMarkers markers)) (
+          unique (resolution-markers ++ supported-markers ++ required-markers)
+        )
+      );
+      filterMarkers = list: filterAttrs (markers: _: elem markers list) topLevelMarkers;
+
+    in
+    {
       inherit version conflicts;
       requires-python = pep440.parseVersionConds requires-python;
       manifest = self.parseManifest manifest;
-      package = map (self.parsePackage {
-        inherit (toplevel) resolution-markers supported-markers;
-      }) package;
-      resolution-markers = listToAttrs (
-        map (markers: nameValuePair markers (parseMarkers markers)) resolution-markers
-      );
-      supported-markers = listToAttrs (
-        map (markers: nameValuePair markers (parseMarkers markers)) supported-markers
-      );
-      required-markers = listToAttrs (
-        map (markers: nameValuePair markers (parseMarkers markers)) required-markers
-      );
+      package = map (self.parsePackage topLevelMarkers) package;
+      resolution-markers = filterMarkers resolution-markers;
+      supported-markers = filterMarkers supported-markers;
+      required-markers = filterMarkers required-markers;
       options = parseOptions options;
       inherit revision;
-    });
+    };
 
   parseManifest =
     {
@@ -406,17 +412,10 @@ fix (self: {
         };
 
     in
-    {
-      resolution-markers ? { },
-      supported-markers ? { },
-      required-markers ? { },
-    }:
+    topLevelMarkers:
     let
       # Parse marker, but avoid parsing markers already present in toplevel uv.lock marker fields
-      parseMarker =
-        marker:
-        resolution-markers.${marker} or supported-markers.${marker} or required-markers.${marker}
-          or (parseMarkers marker);
+      parseMarker = marker: topLevelMarkers.${marker} or (parseMarkers marker);
       inherit (pep440) parseVersion;
 
       parseDependency =
