@@ -13,6 +13,7 @@ let
     attrValues
     mapAttrs
     any
+    optionalAttrs
     ;
   inherit (pyproject-nix.lib) pep440 pep508;
 
@@ -33,7 +34,13 @@ let
       # Note: Using Python from final here causes infinite recursion.
       # There is no correct way to override the python interpreter from within the set anyway,
       # so all facts that we get from the interpreter derivation are still the same.
-      environ' = pep508.setEnviron (pep508.mkEnviron prev.python) environ;
+      environ' = pep508.setEnviron (pep508.mkEnviron prev.python) (
+        environ
+        // optionalAttrs (!environ ? extra) {
+          # Set a default empty list of extras so any marker evaluation that uses the extra field won't crash.
+          extra = [ ];
+        }
+      );
       pythonVersion = environ'.python_full_version.value;
 
       resolved = lock1.resolveDependencies {
