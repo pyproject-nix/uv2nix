@@ -405,10 +405,12 @@ fix (self: {
         {
           requires-dist ? [ ],
           requires-dev ? { },
+          provides-extras ? [ ],
         }:
         {
           requires-dist = map parseRequires requires-dist;
           requires-dev = mapAttrs (_: map parseRequires) requires-dev;
+          inherit provides-extras;
         };
 
     in
