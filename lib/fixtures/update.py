@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import os.path
+import os
 
 SKIP = ["./no-binary-no-build"]
 
@@ -29,6 +30,7 @@ def get_file_creation(path: str) -> str:
 
 
 def lock(root: str, exclude_newer: str):
+    os.unlink(os.path.join(root, "uv.lock"))
     subprocess.run(
         ["uv", "lock", "--exclude-newer", exclude_newer], check=True, cwd=root
     )
