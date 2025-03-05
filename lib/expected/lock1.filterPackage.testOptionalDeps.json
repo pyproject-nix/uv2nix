@@ -2,6 +2,9 @@
   "dependencies": [],
   "dev-dependencies": {},
   "metadata": {
+    "provides-extras": [
+      "haxx"
+    ],
     "requires-dev": {},
     "requires-dist": [
       {

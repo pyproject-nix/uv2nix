@@ -2,6 +2,10 @@
   "dependencies": [],
   "dev-dependencies": {},
   "metadata": {
+    "provides-extras": [
+      "dev",
+      "test"
+    ],
     "requires-dev": {},
     "requires-dist": [
       {

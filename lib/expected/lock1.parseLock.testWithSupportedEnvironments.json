@@ -52,7 +52,7 @@
       "type": "compare"
     }
   },
-  "revision": 0,
+  "revision": 1,
   "supported-markers": {
     "sys_platform == 'darwin'": {
       "lhs": {

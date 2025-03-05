@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [options]
@@ -25,3 +26,4 @@ haxx = [
 
 [package.metadata]
 requires-dist = [{ name = "arpeggio", marker = "extra == 'haxx'" }]
+provides-extras = ["haxx"]

@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 conflicts = [[
     { package = "conflicts", extra = "extra-a" },
@@ -50,6 +51,7 @@ requires-dist = [
     { name = "arpeggio", marker = "extra == 'extra-a'", specifier = "==2.0.0" },
     { name = "arpeggio", marker = "extra == 'extra-b'", specifier = "==2.0.1" },
 ]
+provides-extras = ["extra-a", "extra-b"]
 
 [package.metadata.requires-dev]
 group-c = [{ name = "arpeggio", specifier = "==2.0.0" }]

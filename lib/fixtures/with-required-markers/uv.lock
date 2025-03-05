@@ -8,6 +8,9 @@ required-markers = [
     "platform_machine == 'aarch64' and sys_platform == 'linux'",
 ]
 
+[options]
+exclude-newer = "2025-02-22T07:01:46Z"
+
 [[package]]
 name = "with-required-environments"
 version = "0.1.0"
