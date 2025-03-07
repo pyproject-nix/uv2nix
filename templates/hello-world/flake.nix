@@ -39,6 +39,7 @@
       # Uv2nix treats all uv projects as workspace projects.
       workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
+      package-name = builtins.head (builtins.attrNames workspace.deps.default);
       # Create package overlay from workspace.
       overlay = workspace.mkPyprojectOverlay {
         # Prefer prebuilt binary wheels as a package source.
@@ -88,7 +89,7 @@
       # Package a virtual environment as our main application.
       #
       # Enable no optional dependencies for production build.
-      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello-world-env" workspace.deps.default;
+      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "${package-name}-env" workspace.deps.default;
 
       # Make hello runnable with `nix run`
       apps.x86_64-linux = {
@@ -139,7 +140,7 @@
               # Use environment variable
               root = "$REPO_ROOT";
               # Optional: Only enable editable for these packages
-              # members = [ "hello-world" ];
+              # members = [ "${package-name}" ];
             };
 
             # Override previous set with our overrideable overlay.
@@ -149,7 +150,7 @@
 
                 # Apply fixups for building an editable package of your workspace packages
                 (final: prev: {
-                  hello-world = prev.hello-world.overrideAttrs (old: {
+                  ${package-name} = prev.${package-name}.overrideAttrs (old: {
                     # It's a good idea to filter the sources going into an editable build
                     # so the editable package doesn't have to be rebuilt on every change.
                     src = lib.fileset.toSource {
@@ -181,7 +182,7 @@
             # Build virtual environment, with local packages being editable.
             #
             # Enable all optional dependencies for development.
-            virtualenv = editablePythonSet.mkVirtualEnv "hello-world-dev-env" workspace.deps.all;
+            virtualenv = editablePythonSet.mkVirtualEnv "${package-name}-dev-env" workspace.deps.all;
 
           in
           pkgs.mkShell {
