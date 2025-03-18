@@ -249,8 +249,8 @@ fix (self: {
     Supports:
     - tool.uv.no-binary
     - tool.uv.no-build
-    - tool.uv.no-binary-packages
-    - tool.uv.no-build-packages
+    - tool.uv.no-binary-package
+    - tool.uv.no-build-package
   */
   loadConfig =
     # List of imported (lib.importTOML) pyproject.toml files from workspace from which to load config
