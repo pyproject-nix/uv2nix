@@ -17,6 +17,7 @@
   - [Shipping applications](./patterns/applications.md)
   - [Cross compilation](./patterns/cross/index.md)
   - [Building wheels/sdists](./patterns/dist.md)
+  - [Installing non-PyPI packages](./patterns/nixpkgs-wheels.md)
 
 - [Platform quirks](./platform-quirks.md)
 
