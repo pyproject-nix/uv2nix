@@ -36,6 +36,7 @@ let
     nameValuePair
     pathExists
     unique
+    assertMsg
     ;
 
 in
@@ -454,6 +455,11 @@ fix (self: {
       wheels ? [ ],
       sdist ? { },
     }:
+    assert assertMsg (name != "python")
+      "A package from uv.lock is called `python` which is a reserved name for the interpreter derivation";
+    assert assertMsg (
+      name != "pkgs"
+    ) "A package from uv.lock is called `pkgs` which is a reserved name for the nixpkgs package set";
     {
       inherit
         name
