@@ -26,7 +26,7 @@ For such cases `pyproject.nix` provides a utility function [`mkApplication`](htt
         #
         # Are excluded but things like binaries, man pages, systemd units etc are included.
         default = util.mkApplication {
-          venv = pythonSet.mkVirtualenv "application-env" workspace.deps.default;
+          venv = pythonSet.mkVirtualEnv "application-env" workspace.deps.default;
           package = pythonSet.hello-world;
       };
 }
