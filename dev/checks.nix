@@ -183,7 +183,7 @@ let
         };
         # Check that arpeggio _isn't_ available
         check = ''
-          ! python -c "import arpeggio"
+          python -c "import arpeggio" && exit 1
         '';
       };
 
