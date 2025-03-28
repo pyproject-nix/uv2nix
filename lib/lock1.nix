@@ -68,7 +68,19 @@ fix (self: {
         filter (
           pkg:
           length pkg.resolution-markers == 0
-          || any (markers: resolution-markers.${markers}) pkg.resolution-markers
+          || any (
+            markers:
+            resolution-markers.${markers} or (
+              # Uv has a bug introduced in https://github.com/astral-sh/uv/pull/11513
+              # Where internal conflict markers aren't correctly stripped.
+              #
+              # This makes it impossible to correctly consume a lock with conflict markers.
+              # I'm hoping that this will eventually get fixed, but in the mean time this means that:
+              # 1. We can only really evaluate conflict markers on a best effort basis.
+              # 2. Degraded performance because we can no longer rely on the top-level markers as a cache lookup.
+              evalMarkers environ (parseMarkers markers)
+            )
+          ) pkg.resolution-markers
         ) lock.package
       );
 
