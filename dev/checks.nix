@@ -152,10 +152,51 @@ let
       };
 
       dependencyGroups = mkCheck {
+        name = "dependency-groups";
         root = ../lib/fixtures/dependency-groups;
         spec = {
           dependency-groups = [ "group-a" ];
         };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupNoSelect = mkCheck {
+        name = "dependency-groups-noselect";
+        root = ../lib/fixtures/dependency-groups;
+        spec = {
+          dependency-groups = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsA = mkCheck {
+        name = "dependency-groups-a";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-a" ];
+        };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsB = mkCheck {
+        name = "dependency-groups-b";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-b" ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+        '';
       };
 
       optionalDeps = mkCheck {
