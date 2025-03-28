@@ -214,6 +214,19 @@ let
         '';
       };
 
+      dependencyGroupConflictsBC = mkCheck {
+        name = "dependency-groups-bc";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-b" "group-c" ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+          python -c 'import tqdm'
+        '';
+      };
+
       optionalDeps = mkCheck {
         root = ../lib/fixtures/optional-deps;
         spec = {
