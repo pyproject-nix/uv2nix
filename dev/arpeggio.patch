@@ -1,0 +1,4 @@
+--- /dev/null
++++ b/arpeggio/patched.py
+@@ -0,0 +1 @@
++print("You have patched arpeggio. Congratulations!")

@@ -17,6 +17,7 @@ let
   }) buildSystems';
 
   buildSystemOverrides = import ./build-system-overrides.nix;
+  patchingDeps = import ./patching-deps.nix;
 
   mkCheck' =
     sourcePreference:
@@ -54,6 +55,7 @@ let
                   buildSystems
                   overlay
                   buildSystemOverrides
+                  patchingDeps
                 ]
               );
 
@@ -153,6 +155,17 @@ let
         spec = {
           optional-deps = [ ];
         };
+      };
+
+      patchedArpeggio = mkCheck {
+        name = "patched-arpeggio";
+        root = ../lib/fixtures/workspace;
+        spec = {
+          arpeggio = [ ];
+        };
+        check = ''
+          python -c 'import arpeggio.patched'
+        '';
       };
 
       withExtra = mkCheck {
@@ -286,6 +299,7 @@ let
               buildSystems
               overlay
               buildSystemOverrides
+              patchingDeps
               editableOverlay
               (final: prev: {
                 workspace = prev.workspace.overrideAttrs (old: {
@@ -367,6 +381,7 @@ mkChecks "wheel"
               buildSystems
               overlay
               buildSystemOverrides
+              patchingDeps
             ]
           );
     in
@@ -393,6 +408,7 @@ mkChecks "wheel"
           buildSystems
           overlay
           buildSystemOverrides
+          patchingDeps
         ]
       );
 

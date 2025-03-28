@@ -10,10 +10,6 @@ let
   # `setuptools-scm[toml]` in pyproject.toml would be written as
   # `foo.setuptools-scm = [ "toml" ]` in Nix
   buildSystemOverrides = {
-    arpeggio = {
-      setuptools = [ ];
-      pytest-runner = [ ];
-    };
     attrs = {
       hatchling = [ ];
       hatch-vcs = [ ];
