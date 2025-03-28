@@ -254,14 +254,15 @@ fix (self: {
       # can be merged into a single declaration.
       conflictMerged = lib.mapAttrs (_: lib.unique)
         (lib.zipAttrsWith (_: lib.flatten)
-          (builtins.filter (c: 0 < builtins.length c.right) conflictsRes));
-      right = conflictMerged.right or [];
-      wrong = conflictMerged.wrong or [];
-      deselected' =
-        throwIf
-          (length right > 1)
-          "Conflict resolution selected more than one conflict specifier, resolution still ambigious: ${lib.concatMapStringsSep ", " builtins.toJSON right}"
-          wrong;
+          (builtins.filter (c: let
+            matches = builtins.length c.right;
+          in
+            throwIf
+              (matches > 1)
+              "Conflict resolution selected more than one conflict specifier, resolution still ambigious: ${lib.concatMapStringsSep ", " builtins.toJSON c.right}"
+              matches == 1
+          ) conflictsRes));
+      deselected' = conflictMerged.wrong or [];
       deselected = groupBy (def: def.package) deselected';
     in
     lock
