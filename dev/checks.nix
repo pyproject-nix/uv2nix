@@ -175,6 +175,19 @@ let
         '';
       };
 
+      dependencyGroupNone = mkCheck {
+        name = "dependency-group-conflicts-noselect";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
       dependencyGroupConflictsA = mkCheck {
         name = "dependency-groups-a";
         root = ../lib/fixtures/dependency-group-conflicts;
@@ -184,6 +197,7 @@ let
         check = ''
           python -c 'import urllib3'
           python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
         '';
       };
 
@@ -196,6 +210,7 @@ let
         check = ''
           python -c 'import urllib3' && exit 1
           python -c 'import arpeggio'
+          python -c 'import tqdm' && exit 1
         '';
       };
 
