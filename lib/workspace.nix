@@ -71,7 +71,7 @@ fix (self: {
 
     ## Workspace attributes
     - `mkPyprojectOverlay`: Create an overlay for usage with pyproject.nix's builders
-    - `mkPyprojectEditableOverlay`: Generate an overlay to use with pyproject.nix's build infrastructure to install dependencies in editable mode.
+    - `mkEditablePyprojectOverlay`: Generate an overlay to use with pyproject.nix's build infrastructure to install dependencies in editable mode.
     - `config`: Workspace config as loaded by `loadConfig`
     - `deps`: Pre-defined dependency declarations for top-level workspace packages
       - `default`: No optional-dependencies or dependency-groups enabled
