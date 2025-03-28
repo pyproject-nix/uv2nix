@@ -19,6 +19,7 @@
   - [Building wheels/sdists](./patterns/dist.md)
   - [Installing non-PyPI packages](./patterns/nixpkgs-wheels.md)
   - [Private packages](./patterns/private-deps.md)
+  - [Patching packages](./patterns/patching-deps.md)
 
 - [Platform quirks](./platform-quirks.md)
 
