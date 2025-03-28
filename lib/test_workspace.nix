@@ -120,6 +120,26 @@ in
           };
         };
       };
+
+      testConflictingDependencyGroups = {
+        expr = mkTest ./fixtures/dependency-group-conflicts;
+        expected = rec {
+          all = groups;
+          groups = {
+            dependency-group-conflicts = [
+              "group-a"
+              "group-b"
+              "group-c"
+            ];
+          };
+          optionals = {
+            dependency-group-conflicts = [ ];
+          };
+          default = {
+            dependency-group-conflicts = [ ];
+          };
+        };
+      };
     };
 
   # Test workspaceRoot passed as a string
