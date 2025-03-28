@@ -241,27 +241,33 @@ fix (self: {
       (
         let
           # Get a list of deselected dependency conflicts to filter
-          deselected' = concatMap (
-            conflict:
-            let
-              # Find a single conflict branch to select
-              resolution = partition (
-                def:
-                let
-                  extras' =
-                    spec.${def.package} or (throw "Package '${spec.package}' not present in resolution specification");
-                in
-                elem (def.extra or def.group) extras'
-              ) conflict;
-
-            in
-            throwIf (length resolution.right == 0)
+          extras' = pkg:
+            spec.${pkg} or (throw "Package '${spec.package}' not present in resolution specification");
+          conflictEntryRelevant = def: elem (def.extra or def.group) (extras' def.package);
+          # Every element is a uv conflict declaration parsed into two lists:
+          # all items which apply to this spec, and all which don’t.
+          #
+          # [
+          #   { right = [ <me> ]; wrong = [ <not me> <not me 2> ... ]; }
+          #   ...
+          # ]
+          conflictsRes = map (partition conflictEntryRelevant) lock.conflicts;
+          # Any conflict declaration in which there is not a _single_
+          # declaration which is relevant to this specification is completely
+          # irrelevant, and we should just ignore it wholesale.  All the rest
+          # can be merged into a single declaration.
+          conflictMerged = lib.mapAttrs (_: lib.unique)
+            (lib.zipAttrsWith (_: lib.flatten)
+              (builtins.filter (c: 0 < builtins.length c.right) conflictsRes));
+          right = conflictMerged.right or [];
+          wrong = conflictMerged.wrong or [];
+          deselected' =
+            throwIf (length right == 0)
               "Conflict resolution selected no conflict specifier. Misspelled extra/group?"
               throwIf
-              (length resolution.right > 1)
-              "Conflict resolution selected more than one conflict specifier, resolution still ambigious"
-              resolution.wrong
-          ) lock.conflicts;
+              (length right > 1)
+              "Conflict resolution selected more than one conflict specifier, resolution still ambigious: ${lib.concatMapStringsSep ", " builtins.toJSON right}"
+              wrong;
           deselected = groupBy (def: def.package) deselected';
         in
         # Return rewritten lock without conflicts
