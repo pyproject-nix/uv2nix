@@ -80,9 +80,17 @@ let
     sourcePreference:
     let
       mkCheck = mkCheck' sourcePreference;
+      # Returns true iff this fails to evaluate
+      mkFail = args: ! (builtins.tryEval (mkCheck args)).success;
       nameSuffix = if sourcePreference == "wheel" then "" else "-pref-${sourcePreference}";
 
     in
+    assert mkFail {
+      root = ../lib/fixtures/dependency-group-conflicts;
+      spec = {
+        dependency-group-conflicts = [ "group-a" "group-b" ];
+      };
+    };
     mapAttrs' (name: v: nameValuePair "${name}${nameSuffix}" v) {
       trivial = mkCheck {
         root = ../lib/fixtures/trivial;
