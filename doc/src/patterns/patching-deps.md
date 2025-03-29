@@ -8,7 +8,7 @@ Use this superpower judiciously: if you're building a Python library, you probab
 
 This overlay applies a patch to the `arpeggio` library.
 
-`tqdm-patch.patch`:
+`arpeggio.patch`:
 
 ```diff
 {{#include ../../../dev/arpeggio.patch}}
