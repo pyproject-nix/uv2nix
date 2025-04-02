@@ -235,57 +235,55 @@ fix (self: {
       lock,
       spec,
     }:
-    if lock.conflicts == [ ] then
-      lock
-    else
-      (
-        let
-          # Get a list of deselected dependency conflicts to filter
-          deselected' = concatMap (
-            conflict:
-            let
-              # Find a single conflict branch to select
-              resolution = partition (
-                def:
-                let
-                  extras' =
-                    spec.${def.package} or (throw "Package '${spec.package}' not present in resolution specification");
-                in
-                elem (def.extra or def.group) extras'
-              ) conflict;
-
-            in
-            throwIf (length resolution.right == 0)
-              "Conflict resolution selected no conflict specifier. Misspelled extra/group?"
-              throwIf
-              (length resolution.right > 1)
-              "Conflict resolution selected more than one conflict specifier, resolution still ambigious"
-              resolution.wrong
-          ) lock.conflicts;
-          deselected = groupBy (def: def.package) deselected';
-        in
-        # Return rewritten lock without conflicts
-        assert deselected' != [ ];
-        lock
-        // {
-          conflicts = [ ];
-          package = map (
-            pkg:
-            if !deselected ? ${pkg.name} then
-              pkg
-            else
-              pkg
-              // {
-                optional-dependencies = filterAttrs (
-                  n: _: !any (def: def ? extra && def.extra == n) deselected.${pkg.name}
-                ) pkg.optional-dependencies;
-                dev-dependencies = filterAttrs (
-                  n: _: !any (def: def ? group && def.group == n) deselected.${pkg.name}
-                ) pkg.dev-dependencies;
-              }
-          ) lock.package;
-        }
-      );
+    let
+      # Get a list of deselected dependency conflicts to filter
+      extras' = pkg:
+        spec.${pkg} or (throw "Package '${spec.package}' not present in resolution specification");
+      conflictEntryRelevant = def: elem (def.extra or def.group) (extras' def.package);
+      # Every element is a uv conflict declaration parsed into two lists:
+      # all items which apply to this spec, and all which don’t.
+      #
+      # [
+      #   { right = [ <me> ]; wrong = [ <not me> <not me 2> ... ]; }
+      #   ...
+      # ]
+      conflictsRes = map (partition conflictEntryRelevant) lock.conflicts;
+      # Any conflict declaration in which there is not a _single_
+      # declaration which is relevant to this specification is completely
+      # irrelevant, and we should just ignore it wholesale.  All the rest
+      # can be merged into a single declaration.
+      conflictMerged = lib.mapAttrs (_: lib.unique)
+        (lib.zipAttrsWith (_: lib.flatten)
+          (builtins.filter (c: let
+            matches = builtins.length c.right;
+          in
+            throwIf
+              (matches > 1)
+              "Conflict resolution selected more than one conflict specifier, resolution still ambigious: ${lib.concatMapStringsSep ", " builtins.toJSON c.right}"
+              matches == 1
+          ) conflictsRes));
+      deselected' = conflictMerged.wrong or [];
+      deselected = groupBy (def: def.package) deselected';
+    in
+    lock
+    // {
+      conflicts = [ ];
+      package = map (
+        pkg:
+        if !deselected ? ${pkg.name} then
+          pkg
+        else
+          pkg
+          // {
+            optional-dependencies = filterAttrs (
+              n: _: !any (def: def ? extra && def.extra == n) deselected.${pkg.name}
+            ) pkg.optional-dependencies;
+            dev-dependencies = filterAttrs (
+              n: _: !any (def: def ? group && def.group == n) deselected.${pkg.name}
+            ) pkg.dev-dependencies;
+          }
+      ) lock.package;
+    };
 
   /*
     Parse unmarshaled uv.lock
