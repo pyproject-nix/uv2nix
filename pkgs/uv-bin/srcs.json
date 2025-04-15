@@ -2,6 +2,7 @@
   "version": "0.6.14",
   "platforms": {
     "aarch64-apple-darwin": "4ea4731010fbd1bc8e790e07f199f55a5c7c2c732e9b77f85e302b0bee61b756",
+    "arm64-apple-darwin": "4ea4731010fbd1bc8e790e07f199f55a5c7c2c732e9b77f85e302b0bee61b756",
     "aarch64-unknown-linux-gnu": "ea25597354af186bdd55aee0de431e16d45d82951a4f41f065a8e4dc27885265",
     "aarch64-unknown-linux-musl": "94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7f17",
     "arm-unknown-linux-musleabihf": "de00f51ff804c145f9a0a13ead54e1ed08d317fac690477312cf9430ed43e62e",
