@@ -1,3 +1,10 @@
+let
+  srcs = builtins.fromJSON (builtins.readFile ./srcs.json);
+  platformAliases = {
+    "arm64-apple-darwin" = "aarch64-apple-darwin";
+  };
+
+in
 {
   stdenv,
   lib,
@@ -6,9 +13,7 @@
 }:
 
 let
-  srcs = lib.importJSON ./srcs.json;
-  platform = stdenv.targetPlatform.config;
-
+  platform = platformAliases.${stdenv.targetPlatform.config} or stdenv.targetPlatform.config;
   sha256 = srcs.platforms.${platform} or (throw "Platform ${platform} not supported");
 
 in
