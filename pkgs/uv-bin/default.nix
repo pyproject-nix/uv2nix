@@ -7,7 +7,11 @@
 
 let
   srcs = lib.importJSON ./srcs.json;
-  platform = stdenv.targetPlatform.config;
+  platform' = stdenv.targetPlatform.config;
+  aliases = {
+    "arm64-apple-darwin" = "aarch64-apple-darwin";
+  };
+  platform = aliases.${platform'} or platform';
 
   sha256 = srcs.platforms.${platform} or (throw "Platform ${platform} not supported");
 

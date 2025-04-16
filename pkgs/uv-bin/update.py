@@ -10,11 +10,6 @@ import re
 URL = "https://api.github.com/repos/astral-sh/uv/releases/latest"
 
 
-PLATFORM_ALIASES: dict[str, list[str]] = {
-    "aarch64-apple-darwin": ["arm64-apple-darwin"],
-}
-
-
 # Match an uv binary asset
 uv_re = re.compile(r"uv-(.+)\.tar\..+")
 
@@ -52,10 +47,7 @@ if __name__ == "__main__":
 
         with urllib.request.urlopen(sha256_url) as resp:
             data: bytes = resp.read()
-            value = data.split()[0].decode()
-            checksums[platform] = value
-            for alias in PLATFORM_ALIASES.get(platform, []):
-                checksums[alias] = value
+            checksums[platform] = data.split()[0].decode()
 
     with open("srcs.json", "w") as out:
         json.dump(
