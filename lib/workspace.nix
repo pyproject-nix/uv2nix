@@ -16,6 +16,7 @@ let
     match
     replaceStrings
     concatMap
+    concatStringsSep
     optional
     any
     fix
@@ -30,14 +31,17 @@ let
     isFunction
     nameValuePair
     listToAttrs
-    removePrefix
     groupBy
     head
     isString
     optionalString
     inPureEvalMode
     hasPrefix
+    path
+    replicate
+    drop
     ;
+  inherit (lib.lists) commonPrefix;
   inherit (builtins) readDir hasContext;
 
   # Match str against a glob pattern
@@ -52,6 +56,8 @@ let
     s: match re s != null;
 
   splitPath = splitString "/";
+
+  getSubComponents = p: path.subpath.components (path.splitRoot p).subpath;
 
 in
 
@@ -188,6 +194,7 @@ fix (self: {
         let
           # Filter any local packages that might be deactivated by markers or other filtration mechanisms.
           activeMembers = filter (name: !prev ? name) members;
+
         in
         listToAttrs (
           map (
@@ -197,8 +204,12 @@ fix (self: {
                 editableRoot =
                   let
                     inherit (workspaceProjects.${name}) projectRoot;
+                    # Split projectRoot/workspaceRoot into subcomponents to support editable projects in parent directories.
+                    prSub = getSubComponents projectRoot;
+                    wrSub = getSubComponents workspaceRoot;
+                    n = length (commonPrefix prSub wrSub);
                   in
-                  root + (removePrefix (toString workspaceRoot) (toString projectRoot));
+                  concatStringsSep "/" ([ root ] ++ replicate ((length wrSub) - n) ".." ++ drop n prSub);
               }
             )
           ) activeMembers
