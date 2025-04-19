@@ -16,6 +16,7 @@ let
     match
     replaceStrings
     concatMap
+    concatStringsSep
     optional
     any
     fix
@@ -37,7 +38,9 @@ let
     optionalString
     inPureEvalMode
     hasPrefix
+    path
     ;
+  inherit (lib.lists) commonPrefix;
   inherit (builtins) readDir hasContext;
 
   # Match str against a glob pattern
@@ -197,8 +200,15 @@ fix (self: {
                 editableRoot =
                   let
                     inherit (workspaceProjects.${name}) projectRoot;
+                    getSubComponents = p: path.subpath.components (path.splitRoot p).subpath;
+                    prSub = getSubComponents projectRoot;
+                    wrSub = getSubComponents workspaceRoot;
+                    n = builtins.length (commonPrefix prSub wrSub);
                   in
-                  root + (removePrefix (toString workspaceRoot) (toString projectRoot));
+                  concatStringsSep "/" (
+                    [ root ] ++
+                    lib.replicate ((builtins.length wrSub) - n) ".." ++
+                    lib.drop n prSub);
               }
             )
           ) activeMembers
