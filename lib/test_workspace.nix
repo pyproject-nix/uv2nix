@@ -153,4 +153,36 @@ in
       };
     };
 
+  # Test workspaceRoot passed as an attrset
+  # This is analogous to using builtins.fetchGit & such which return an attrset with an outPath member.
+  loadWorkspace.fetchedWorkspace =
+    let
+      mkTestSet =
+        workspaceRoot:
+        let
+          ws = workspace.loadWorkspace { inherit workspaceRoot; };
+
+          overlay = ws.mkPyprojectOverlay { sourcePreference = "wheel"; };
+
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = pkgs.python312;
+            }).overrideScope
+              overlay;
+        in
+        pythonSet;
+
+      wsRoot = {
+        outPath = "${./fixtures/workspace-flat}";
+      };
+      testSet = mkTestSet wsRoot;
+    in
+    {
+      # Test that the stringly src lookup is correct relative to the workspace root
+      testOutpathSrc = {
+        expr = testSet."pkg-a".src == "${wsRoot}/packages/pkg-a";
+        expected = true;
+      };
+    };
+
 }
