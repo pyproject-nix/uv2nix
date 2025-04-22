@@ -340,6 +340,83 @@ let
             touch $out
           '';
 
+      editable-parent-dir =
+        let
+          workspaceRoot = ../lib/fixtures/kitchen-sink/a;
+          cEditableRoot = ../lib/fixtures/kitchen-sink/c-editable;
+          ws = uv2nix.workspace.loadWorkspace { inherit workspaceRoot; };
+
+          interpreter = pkgs.python312;
+
+          # Generate overlays
+          overlay = ws.mkPyprojectOverlay {
+            inherit sourcePreference;
+            environ = { };
+          };
+          editableOverlay = ws.mkEditablePyprojectOverlay {
+            root = "$NIX_BUILD_TOP/a";
+            members = [
+              "a"
+              "c-editable"
+            ];
+          };
+
+          # Base package set
+          baseSet = pkgs.callPackage pyproject-nix.build.packages {
+            python = interpreter;
+          };
+
+          # Override package set with our overlays
+          pythonSet = baseSet.overrideScope (
+            lib.composeManyExtensions [
+              buildSystems
+              overlay
+              buildSystemOverrides
+              patchingDeps
+              editableOverlay
+              (final: prev: {
+                a = prev.a.overrideAttrs (old: {
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+
+                c-editable = prev.c-editable.overrideAttrs (old: {
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+              })
+            ]
+          );
+
+          pythonEnv = pythonSet.pythonPkgsHostHost.mkVirtualEnv "editable-venv" {
+            a = [ ];
+          };
+
+        in
+        pkgs.runCommand "editable-parent-dir-test"
+          {
+            nativeBuildInputs = [
+              pkgs.findutils
+              pythonEnv
+            ];
+          }
+          ''
+            cp -r ${workspaceRoot} a
+            cp -r ${cEditableRoot} c-editable
+            chmod -R +w a c-editable
+
+            test "$(python -c 'import c_editable; print(c_editable.hello())')" = "Hello from c-editable!"
+            substituteInPlace ./c-editable/src/c_editable/__init__.py --replace-fail c-editable mutable-package
+            test "$(python -c 'import c_editable; print(c_editable.hello())')" = "Hello from mutable-package!"
+            touch $out
+          '';
+
       workspace-with-legacy = mkCheck {
         name = "conflicts-group-b";
         root = ../lib/fixtures/workspace-with-legacy;
