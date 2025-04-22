@@ -362,6 +362,7 @@ fix (self: {
           path ? null,
           hash ? null,
           size ? null,
+          upload_time ? null,
         }@whl:
         # Assert mutually exclusive args
         assert (whl ? url) -> (!whl ? filename && !whl ? path);
@@ -384,6 +385,9 @@ fix (self: {
         }
         // optionalAttrs (whl ? hash) {
           inherit hash;
+        }
+        // optionalAttrs (upload_time != null) {
+          inherit upload_time;
         };
 
       parseMetadata =
