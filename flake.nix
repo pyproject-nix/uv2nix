@@ -98,7 +98,7 @@
           lix = mkShell' {
             nix-unit =
               let
-                lix = pkgs.lixVersions.latest;
+                lix = pkgs.lixVersions.lix_2_91;
               in
               (pkgs.nix-unit.override {
                 # Hacky overriding :)

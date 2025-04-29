@@ -211,9 +211,7 @@
     {
       "file'": {
         "abiTag": {
-          "implementation": "none",
-          "rest": "",
-          "version": null
+          "tag": "none"
         },
         "buildTag": null,
         "distribution": "Arpeggio",
