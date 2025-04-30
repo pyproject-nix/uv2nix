@@ -1,5 +1,5 @@
 version = 1
-revision = 1
+revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
     "sys_platform == 'linux'",
