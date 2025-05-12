@@ -528,7 +528,11 @@ fix (self: {
                   build-systems = [ ];
                   # None of these fields should be accessed because dependencies are taken from uv.lock.
                   # Taint them to ensure we don't accidentally rely on them.
-                  dependencies = throw "internal error: accessed dependencies from pyproject.nix project, not uv.lock";
+                  dependencies = throw ''
+                    internal error: accessed dependencies from pyproject.nix project, not uv.lock
+
+                    Hint: Are you in a Flake and forgot to `git add pyproject.toml`?
+                  '';
                   extras = dependencies;
                   groups = dependencies;
 
