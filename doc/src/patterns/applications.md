@@ -29,5 +29,15 @@ For such cases `pyproject.nix` provides a utility function [`mkApplication`](htt
           venv = pythonSet.mkVirtualEnv "application-env" workspace.deps.default;
           package = pythonSet.hello-world;
       };
+
+        # If you are building a package within a workspace, and want to avoid
+        # including the dependencies of all members of your workspace,
+        # instead of just the packages that your application needs.
+        app = util.mkApplication {
+          venv = pythonSet.mkVirtualEnv "application-env" {
+            app = [ ];
+          };
+          package = pythonSet.hello-world;
+        };
 }
 ```
