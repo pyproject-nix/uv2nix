@@ -1,3 +1,4 @@
+from concurrent.futures import Future, ThreadPoolExecutor
 import urllib.request
 from typing import (
     Any,
@@ -36,24 +37,32 @@ if __name__ == "__main__":
     # Output platform -> checksum
     checksums: dict[str, str] = {}
 
-    # For each uv binary platform, download the hash file
-    for filename in files:
-        m = match_uv(filename)
-        if not m:
-            continue
-
-        platform = m.group(1)
-        sha256_url: str = files[f"{filename}.sha256"]["browser_download_url"]
-
+    def fetch_hash(platform: str, sha256_url: str):
         with urllib.request.urlopen(sha256_url) as resp:
             data: bytes = resp.read()
             checksums[platform] = data.split()[0].decode()
+
+    # For each uv binary platform, download the hash file
+    with ThreadPoolExecutor() as executor:
+        futures: list[Future[None]] = []
+
+        for filename in files:
+            m = match_uv(filename)
+            if not m:
+                continue
+
+            platform = m.group(1)
+            sha256_url: str = files[f"{filename}.sha256"]["browser_download_url"]
+            futures.append(executor.submit(fetch_hash, platform, sha256_url))
+
+        for future in futures:
+            future.result()
 
     with open("srcs.json", "w") as out:
         json.dump(
             {
                 "version": tag_name,
-                "platforms": checksums,
+                "platforms": {k: checksums[k] for k in sorted(checksums.keys())},
             },
             out,
             indent=2,
