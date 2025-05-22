@@ -10,6 +10,8 @@ in
   lib,
   fetchurl,
   autoPatchelfHook,
+  git,
+  makeWrapper,
 }:
 
 let
@@ -32,7 +34,9 @@ stdenv.mkDerivation (
       inherit sha256;
     };
 
-    nativeBuildInputs = lib.optional stdenv.isLinux autoPatchelfHook;
+    nativeBuildInputs = [
+      makeWrapper
+    ] ++ lib.optional stdenv.isLinux autoPatchelfHook;
     buildInputs = lib.optional stdenv.isLinux stdenv.cc.cc;
 
     dontConfigure = true;
@@ -41,6 +45,10 @@ stdenv.mkDerivation (
     installPhase = ''
       mkdir -p $out/bin
       mv uv* $out/bin
+    '';
+
+    postFixup = ''
+      wrapProgram $out/bin/uv --prefix PATH : ${git}/bin
     '';
 
     meta = {
