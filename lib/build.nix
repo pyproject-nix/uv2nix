@@ -52,16 +52,16 @@ let
               parts = splitString "=" s;
             in
             assert length parts == 2;
-            nameValuePair (elemAt parts 0) (elemAt parts 1)
+            nameValuePair (unquoteURL (elemAt parts 0)) (unquoteURL (elemAt parts 1))
           ) (splitString "&" (elemAt m1 1))
         );
-        fragment = elemAt m1 2;
+        fragment = unquoteURL (elemAt m1 2);
       }
     else if m2 != null then
       {
         url = elemAt m2 0;
         query = { };
-        fragment = elemAt m2 1;
+        fragment = unquoteURL (elemAt m2 1);
       }
     else
       throw "Could not parse git url: ${url}";
