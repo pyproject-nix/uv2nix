@@ -82,20 +82,22 @@
               pyprojectOverrides
             ]
           );
-
     in
     {
       # Package a virtual environment as our main application.
-      #
       # Enable no optional dependencies for production build.
-      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello-world-env" workspace.deps.default;
+      #
+      # If you are building a package within a workspace, and want to avoid
+      # including the dependencies of all members of your workspace,
+      # instead of just the packages that your application needs,
+      # simply pass the dependency group for your package manually.
+      packages.x86_64-linux.default = pythonSet.mkVirtualEnv "hello-world-env" {
+        hello-world = [ ];
+      };
 
-      # Make hello runnable with `nix run`
-      apps.x86_64-linux = {
-        default = {
-          type = "app";
-          program = "${self.packages.x86_64-linux.default}/bin/hello";
-        };
+      apps.x86_64-linux.default = {
+        type = "app";
+        program = "${self.packages.x86_64-linux.default}/bin/hello";
       };
 
       # This example provides two different modes of development:
