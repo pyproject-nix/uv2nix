@@ -80,9 +80,17 @@ let
     sourcePreference:
     let
       mkCheck = mkCheck' sourcePreference;
+      # Returns true iff this fails to evaluate
+      mkFail = args: ! (builtins.tryEval (mkCheck args)).success;
       nameSuffix = if sourcePreference == "wheel" then "" else "-pref-${sourcePreference}";
 
     in
+    assert mkFail {
+      root = ../lib/fixtures/dependency-group-conflicts;
+      spec = {
+        dependency-group-conflicts = [ "group-a" "group-b" ];
+      };
+    };
     mapAttrs' (name: v: nameValuePair "${name}${nameSuffix}" v) {
       trivial = mkCheck {
         root = ../lib/fixtures/trivial;
@@ -144,10 +152,79 @@ let
       };
 
       dependencyGroups = mkCheck {
+        name = "dependency-groups";
         root = ../lib/fixtures/dependency-groups;
         spec = {
           dependency-groups = [ "group-a" ];
         };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupNoSelect = mkCheck {
+        name = "dependency-groups-noselect";
+        root = ../lib/fixtures/dependency-groups;
+        spec = {
+          dependency-groups = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupNone = mkCheck {
+        name = "dependency-group-conflicts-noselect";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsA = mkCheck {
+        name = "dependency-groups-a";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-a" ];
+        };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsB = mkCheck {
+        name = "dependency-groups-b";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-b" ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsBC = mkCheck {
+        name = "dependency-groups-bc";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-b" "group-c" ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+          python -c 'import tqdm'
+        '';
       };
 
       optionalDeps = mkCheck {
@@ -188,7 +265,7 @@ let
         };
         # Check that arpeggio _isn't_ available
         check = ''
-          ! python -c "import arpeggio"
+          python -c "import arpeggio" && exit 1
         '';
       };
 
