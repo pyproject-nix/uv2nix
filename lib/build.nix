@@ -332,7 +332,9 @@ in
                   inherit (selectedWheel) url hash;
                 }
               else
-                lib.warn "wheel url '${selectedWheel.url}' missing hash, falling back to builtins.fetchurl" (builtins.fetchurl selectedWheel.url)
+                lib.warn "wheel url '${selectedWheel.url}' missing hash, falling back to builtins.fetchurl" (
+                  builtins.fetchurl selectedWheel.url
+                )
             # Get wheel from local path
             else if selectedWheel ? path then
               (workspaceRoot + "/${source.registry}/${selectedWheel.path}")
