@@ -194,8 +194,8 @@
               # Don't create venv using uv
               UV_NO_SYNC = "1";
 
-              # Force uv to use Python interpreter from venv
-              UV_PYTHON = "${virtualenv}/bin/python";
+              # Force uv to use nixpkgs Python interpreter
+              UV_PYTHON = python.interpreter;
 
               # Prevent uv from downloading managed Python's
               UV_PYTHON_DOWNLOADS = "never";

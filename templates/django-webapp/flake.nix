@@ -58,9 +58,11 @@
           pkgs = nixpkgs.legacyPackages.${system};
           inherit (pkgs) stdenv;
 
+          python = pkgs.python312;
+
           # Base Python package set from pyproject.nix
           baseSet = pkgs.callPackage pyproject-nix.build.packages {
-            python = pkgs.python312;
+            inherit python;
           };
 
           # An overlay of build fixups & test additions
@@ -342,6 +344,8 @@
         let
           pkgs = nixpkgs.legacyPackages.${system};
 
+          python = pkgs.python312;
+
           editablePythonSet = pythonSets.${system}.overrideScope (
             lib.composeManyExtensions [
               editableOverlay
@@ -378,7 +382,7 @@
             ];
             env = {
               UV_NO_SYNC = "1";
-              UV_PYTHON = "${venv}/bin/python";
+              UV_PYTHON = python.interpreter;
               UV_PYTHON_DOWNLOADS = "never";
             };
             shellHook = ''
