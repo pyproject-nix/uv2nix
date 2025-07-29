@@ -26,6 +26,8 @@
 
 - [Inline script metadata](./usage/inline-metadata.md)
 
+- [Conflicts support](./conflicts.md)
+
 - [Showcases]()
   - [Django](./showcases/django.md)
 
