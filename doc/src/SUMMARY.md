@@ -20,6 +20,7 @@
   - [Installing non-PyPI packages](./patterns/nixpkgs-wheels.md)
   - [Private packages](./patterns/private-deps.md)
   - [Patching packages](./patterns/patching-deps.md)
+  - [Advanced build systems (editables)](./patterns/advanced-build-systems.md)
 
 - [Platform quirks](./platform-quirks.md)
 
