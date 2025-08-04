@@ -17,7 +17,7 @@
   - [Shipping applications](./patterns/applications.md)
   - [Cross compilation](./patterns/cross/index.md)
   - [Building wheels/sdists](./patterns/dist.md)
-  - [Installing non-PyPI packages](./patterns/nixpkgs-wheels.md)
+  - [Installing nixpkgs packages](./patterns/nixpkgs-wheels.md)
   - [Private packages](./patterns/private-deps.md)
   - [Patching packages](./patterns/patching-deps.md)
   - [Advanced build systems (editables)](./patterns/advanced-build-systems.md)

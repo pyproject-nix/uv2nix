@@ -1,7 +1,9 @@
-# Installing packages from nixpkgs not in PyPI
+# Installing packages from nixpkgs
 
-In some cases a package isn't published on PyPI, but is packaged in nixpkgs.
-One such package is the `seccomp` package.
+In some cases a package isn't published on PyPI, but is packaged in nixpkgs, or you might be struggling trying to figure out the overrides to build a particular package.
+In such cases it's possible to use Python packages from nixpkgs through an interoperability layer.
+
+We are using the `seccomp` package for demonstration here, which is not available on PyPI.
 
 ## Installing a wheel (recommended)
 
