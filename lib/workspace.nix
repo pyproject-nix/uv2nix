@@ -205,14 +205,14 @@ fix (self: {
       # Create dependency specifications for each member
       memberDepsData = mapAttrs (name: deps:
         {
-          # Default dependencies - convert from uv.lock format to list format for compatibility
-          default = attrNames deps.dependencies;
+          # Default dependencies - keep original format for mkVirtualEnv compatibility
+          default = deps.dependencies;
           # All optional dependencies
-          optionals = attrNames deps.optional-dependencies;
+          optionals = deps.optional-dependencies;
           # All dependency groups
-          groups = attrNames deps.dev-dependencies;
+          groups = deps.dev-dependencies;
           # All optional dependencies and groups
-          all = unique (attrNames deps.optional-dependencies ++ attrNames deps.dev-dependencies);
+          all = deps.optional-dependencies // deps.dev-dependencies;
         }
       ) memberDependenciesFromLock;
       
@@ -325,7 +325,8 @@ fix (self: {
                   (filter (package: !package.source ? directory) localPackages)
               );
         in
-        {
+        # Merge workspace member dependencies with root project dependencies
+        memberDepsData // {
           # Dependency specification with all optional dependencies & groups
           all = mapAttrs (
             _: package: unique (attrNames package.optional-dependencies ++ attrNames package.dev-dependencies)

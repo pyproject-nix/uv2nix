@@ -121,23 +121,23 @@ in
         members = [ "pkg-a" "pkg-b" ];
         memberDeps = {
           "pkg-a" = {
-            default = [ ];
-            optionals = [ ];
-            groups = [ ];
-            all = [ ];
+            default = { };
+            optionals = { };
+            groups = { };
+            all = { };
           };
           "pkg-b" = {
-            default = [ "pkg-a" ];
-            optionals = [ ];
-            groups = [ ];
-            all = [ ];
+            default = { "pkg-a" = [ ]; };
+            optionals = { };
+            groups = { };
+            all = { };
           };
         };
         pkgBDeps = {
-          default = [ "pkg-a" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "pkg-a" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
       };
     };
@@ -158,24 +158,24 @@ in
         sharedInfo = ws.getMemberInfo "shared";
       };
       expected = {
-        members = [ "api" "shared" "webapp" ];
+        members = [ "api" "shared" "test-workspace" "webapp" ];
         webappDeps = {
-          default = [ "flask" "requests" "shared" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "flask" = [ ]; "requests" = [ "socks" ]; "shared" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
         apiDeps = {
-          default = [ "fastapi" "shared" "uvicorn" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "fastapi" = [ ]; "shared" = [ ]; "uvicorn" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
         sharedDeps = {
-          default = [ "click" "pydantic" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "click" = [ ]; "pydantic" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
         webappInfo = {
           name = "webapp";
@@ -267,10 +267,10 @@ in
           dev-dependencies = { };
         };
         rootDeps = {
-          default = [ "workspace-package" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "workspace-package" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
         packageInfo = {
           name = "workspace-package";
@@ -282,10 +282,10 @@ in
           dev-dependencies = { };
         };
         packageDeps = {
-          default = [ "arpeggio" ];
-          optionals = [ ];
-          groups = [ ];
-          all = [ ];
+          default = { "arpeggio" = [ ]; };
+          optionals = { };
+          groups = { };
+          all = { };
         };
       };
     };
