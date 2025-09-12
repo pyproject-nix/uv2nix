@@ -86,6 +86,41 @@ in
         };
       };
 
+      testWorkspaceMembers = {
+        expr = mkTest ./fixtures/workspace;
+        expected = {
+          all = {
+            workspace = [ ];
+            "workspace-package" = [ ];
+          };
+          groups = {
+            workspace = [ ];
+            "workspace-package" = [ ];
+          };
+          optionals = {
+            workspace = [ ];
+            "workspace-package" = [ ];
+          };
+          default = {
+            workspace = [ ];
+            "workspace-package" = [ ];
+          };
+          # Member-specific dependencies
+          "workspace-package" = {
+            default = [ "arpeggio" ];
+            optionals = [ ];
+            groups = [ ];
+            all = [ ];
+          };
+          workspace = {
+            default = [ "workspace-package" ];
+            optionals = [ ];
+            groups = [ ];
+            all = [ ];
+          };
+        };
+      };
+
       testOptionalDeps = {
         expr = mkTest ./fixtures/optional-deps;
         expected = rec {
@@ -117,6 +152,84 @@ in
           };
           default = {
             dependency-groups = [ ];
+          };
+        };
+      };
+    };
+
+  # Test new member-specific functionality
+  loadWorkspace.members =
+    let
+      mkTest = workspaceRoot: workspace.loadWorkspace { inherit workspaceRoot; };
+    in
+    {
+      testWorkspaceMembers = {
+        expr = (mkTest ./fixtures/workspace).members;
+        expected = [ "workspace-package" "workspace" ];
+      };
+      
+      testWorkspaceFlatMembers = {
+        expr = (mkTest ./fixtures/workspace-flat).members;
+        expected = [ "pkg-a" "pkg-b" ];
+      };
+    };
+
+  loadWorkspace.getMemberDeps =
+    let
+      mkTest = workspaceRoot: workspace.loadWorkspace { inherit workspaceRoot; };
+    in
+    {
+      testWorkspacePackageDeps = {
+        expr = (mkTest ./fixtures/workspace).getMemberDeps "workspace-package";
+        expected = {
+          default = [ "arpeggio" ];
+          optionals = [ ];
+          groups = [ ];
+          all = [ ];
+        };
+      };
+      
+      testPkgBDeps = {
+        expr = (mkTest ./fixtures/workspace-flat).getMemberDeps "pkg-b";
+        expected = {
+          default = [ "pkg-a" ];
+          optionals = [ ];
+          groups = [ ];
+          all = [ ];
+        };
+      };
+    };
+
+  loadWorkspace.getMemberInfo =
+    let
+      mkTest = workspaceRoot: workspace.loadWorkspace { inherit workspaceRoot; };
+    in
+    {
+      testWorkspacePackageInfo = {
+        expr = (mkTest ./fixtures/workspace).getMemberInfo "workspace-package";
+        expected = {
+          name = "workspace-package";
+          path = "/packages/workspace-package";
+          version = "0.1.0";
+          description = "Add your description here";
+          dependencies = {
+            dependencies = [ "arpeggio" ];
+            optional-dependencies = { };
+            dev-dependencies = { };
+          };
+          pyproject = {
+            project = {
+              name = "workspace-package";
+              version = "0.1.0";
+              description = "Add your description here";
+              readme = "README.md";
+              requires-python = ">=3.12";
+              dependencies = [ "arpeggio" ];
+            };
+            build-system = {
+              requires = [ "hatchling" ];
+              build-backend = "hatchling.build";
+            };
           };
         };
       };
@@ -185,4 +298,31 @@ in
       };
     };
 
+  # Additional tests for workspace member features
+  loadWorkspace.memberFeatures =
+    let
+      testWorkspace = workspace.loadWorkspace { workspaceRoot = ./fixtures/workspace; };
+    in
+    {
+      # Test listMembers alias
+      testListMembersAlias = {
+        expr = testWorkspace.listMembers;
+        expected = testWorkspace.members;
+      };
+
+      # Test error handling for non-existent member in getMemberDeps
+      testNonExistentMemberDeps = {
+        expr = builtins.tryEval (testWorkspace.getMemberDeps "nonexistent");
+        expected = { success = false; value = false; };
+      };
+
+      # Test error handling for non-existent member in getMemberInfo
+      testNonExistentMemberInfo = {
+        expr = builtins.tryEval (testWorkspace.getMemberInfo "nonexistent");
+        expected = { success = false; value = false; };
+      };
+    };
+
+
 }
+

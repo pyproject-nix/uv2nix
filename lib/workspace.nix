@@ -40,6 +40,8 @@ let
     path
     replicate
     drop
+    hasAttr
+    getAttr
     ;
   inherit (lib.lists) commonPrefix;
   inherit (builtins) readDir hasContext;
@@ -58,6 +60,44 @@ let
   splitPath = splitString "/";
 
   getSubComponents = p: path.subpath.components (path.splitRoot p).subpath;
+
+  # Parse dependencies from a pyproject.toml project section
+  parseProjectDependencies = project:
+    let
+      deps = project.dependencies or [];
+      optionalDeps = project.optional-dependencies or {};
+      devDeps = project."dependency-groups" or {};
+    in
+    {
+      dependencies = deps;
+      optional-dependencies = optionalDeps;
+      dev-dependencies = devDeps;
+    };
+
+  # Parse member dependencies from pyproject.toml
+  parseMemberDependencies = workspaceRoot: memberPath:
+    let
+      memberPyproject = importTOML (workspaceRoot + "/${memberPath}/pyproject.toml");
+      project = memberPyproject.project or {};
+    in
+    parseProjectDependencies project;
+
+  # Get workspace member names from discovered paths
+  getMemberNames = workspaceRoot: members:
+    map (memberPath: 
+      if memberPath == "/" then
+        # Virtual root case - try to get name from pyproject.toml
+        let
+          pyproject = importTOML (workspaceRoot + "/pyproject.toml");
+        in
+        if pyproject ? project then pyproject.project.name else "workspace"
+      else
+        # Regular member - get name from last path component
+        let
+          pathParts = splitString "/" memberPath;
+        in
+        (elemAt pathParts ((length pathParts) - 1))
+    ) members;
 
 in
 
@@ -79,11 +119,20 @@ fix (self: {
     - `mkPyprojectOverlay`: Create an overlay for usage with pyproject.nix's builders
     - `mkEditablePyprojectOverlay`: Generate an overlay to use with pyproject.nix's build infrastructure to install dependencies in editable mode.
     - `config`: Workspace config as loaded by `loadConfig`
-    - `deps`: Pre-defined dependency declarations for top-level workspace packages
-      - `default`: No optional-dependencies or dependency-groups enabled
-      - `optionals`: All optional-dependencies enabled
-      - `groups`: All dependency-groups enabled
-      - `all`: All optional-dependencies & dependency-groups enabled
+    - `members`: List of workspace member names
+    - `deps`: Pre-defined dependency declarations for workspace packages
+      - `default`: No optional-dependencies or dependency-groups enabled (workspace-wide)
+      - `optionals`: All optional-dependencies enabled (workspace-wide)
+      - `groups`: All dependency-groups enabled (workspace-wide)
+      - `all`: All optional-dependencies & dependency-groups enabled (workspace-wide)
+      - `"member-name"`: Member-specific dependency specifications
+        - `default`: Member's core dependencies
+        - `optionals`: Member's optional dependencies
+        - `groups`: Member's dependency groups
+        - `all`: All member dependencies and groups
+    - `getMemberDeps`: Get dependency specifications for a specific member
+    - `getMemberInfo`: Get detailed information about a workspace member
+    - `listMembers`: List all workspace member names
   */
   loadWorkspace =
     {
@@ -137,12 +186,49 @@ fix (self: {
     assert assertMsg (
       !(config'.no-binary && config'.no-build)
     ) "Both tool.uv.no-build and tool.uv.no-binary are set to true, making the workspace unbuildable";
+    let
+      # Discover workspace members
+      discoveredMembers = self.discoverWorkspace { inherit workspaceRoot pyproject; };
+      memberNames = getMemberNames workspaceRoot discoveredMembers;
+      
+      # Create member name to path mapping
+      memberPaths = listToAttrs (
+        map (i: nameValuePair (elemAt memberNames i) (elemAt discoveredMembers i)) 
+        (lib.range 0 ((length memberNames) - 1))
+      );
+      
+      # Parse dependencies for each member
+      memberDependencies = mapAttrs (name: path: 
+        parseMemberDependencies workspaceRoot path
+      ) memberPaths;
+      
+      # Create dependency specifications for each member
+      memberDeps = mapAttrs (name: deps:
+        {
+          # Default dependencies (no optional deps or groups)
+          default = deps.dependencies;
+          # All optional dependencies
+          optionals = attrNames deps.optional-dependencies;
+          # All dependency groups
+          groups = attrNames deps.dev-dependencies;
+          # All optional dependencies and groups
+          all = unique (attrNames deps.optional-dependencies ++ attrNames deps.dev-dependencies);
+        }
+      ) memberDependencies;
+      
+    in
     rec {
       /*
         Workspace config as loaded by loadConfig
         .
       */
       config = config';
+
+      /*
+        List of workspace member names
+        .
+      */
+      members = memberNames;
 
       /*
         Generate an overlay to use with pyproject.nix's build infrastructure.
@@ -255,7 +341,50 @@ fix (self: {
           default = mapAttrs (
             name: _: workspaceProjects.${name}.pyproject.tool.uv.default-groups or [ ]
           ) packages';
-        };
+        } // memberDeps;
+
+      /*
+        Get dependencies for a specific workspace member
+        
+        # Arguments
+        
+        `memberName`: Name of the workspace member
+      */
+      getMemberDeps = memberName: 
+        if hasAttr memberName memberDeps then
+          memberDeps.${memberName}
+        else
+          throw "Workspace member '${memberName}' not found. Available members: ${concatStringsSep ", " memberNames}";
+
+      /*
+        Get detailed information about a workspace member
+        
+        # Arguments
+        
+        `memberName`: Name of the workspace member
+      */
+      getMemberInfo = memberName:
+        if hasAttr memberName memberPaths then
+          let
+            memberPath = memberPaths.${memberName};
+            memberPyproject = importTOML (workspaceRoot + "/${memberPath}/pyproject.toml");
+            project = memberPyproject.project or {};
+          in
+          {
+            name = memberName;
+            path = memberPath;
+            version = project.version or "0.0.0";
+            description = project.description or "";
+            dependencies = memberDependencies.${memberName};
+            pyproject = memberPyproject;
+          }
+        else
+          throw "Workspace member '${memberName}' not found. Available members: ${concatStringsSep ", " memberNames}";
+
+      /*
+        List all workspace member names
+      */
+      listMembers = memberNames;
     };
 
   /**
