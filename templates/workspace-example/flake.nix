@@ -34,171 +34,174 @@
     }:
     let
       inherit (nixpkgs) lib;
-
-      # Load the UV workspace with native member support
-      workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
-
-      # Create package overlay from workspace
-      overlay = workspace.mkPyprojectOverlay {
-        sourcePreference = "wheel";
-      };
-
-      # Create Python package set
-      pythonSet =
-        (nixpkgs.callPackage pyproject-nix.build.packages {
-          python = nixpkgs.python312;
-        }).overrideScope
-          overlay;
+      # Support multiple systems
+      systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      forAllSystems = lib.genAttrs systems;
 
     in
     {
       # Example 1: Create environments for specific workspace members
-      packages = {
-        # Environment with only the web app dependencies
-        webapp-env = pythonSet.mkVirtualEnv "webapp" 
-          workspace.deps."webapp".default;
+      packages = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          
+          # Load the UV workspace with native member support
+          workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
-        # Environment with only the API library dependencies  
-        api-env = pythonSet.mkVirtualEnv "api"
-          workspace.deps."api".default;
+          # Create package overlay from workspace
+          overlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+          };
 
-        # Environment with only the shared library dependencies
-        shared-env = pythonSet.mkVirtualEnv "shared"
-          workspace.deps."shared".default;
+          # Create Python package set
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = pkgs.python312;
+            }).overrideScope
+              (lib.composeManyExtensions [
+                pyproject-build-systems.overlays.default
+                overlay
+              ]);
+        in
+        {
+          # Environment with all workspace dependencies
+          default = pythonSet.mkVirtualEnv "workspace-env" workspace.deps.default;
 
-        # Environment with all workspace dependencies
-        full-env = pythonSet.mkVirtualEnv "full"
-          workspace.deps.all;
-      };
+          # Example 3: Container images for specific workspace members (Linux only)
+          docker = if lib.hasInfix "linux" system then
+            {
+              # Minimal container with workspace
+              workspace = pkgs.dockerTools.buildImage {
+                name = "myapp-workspace";
+                tag = "latest";
+                contents = [
+                  (pythonSet.mkVirtualEnv "workspace-container" 
+                    workspace.deps.default)
+                ];
+                config = {
+                  Cmd = [ "python" "-m" "myapp.main" ];
+                };
+              };
+            }
+          else
+            { };
+
+          # Example 4: CI/CD jobs for specific members
+          ci = {
+            # Test job for web app
+            test-webapp = pkgs.writeShellScriptBin "test-webapp" ''
+              set -e
+              echo "Testing webapp with dependencies: fastapi, shared, uvicorn"
+              # Run webapp tests
+            '';
+
+            # Test job for API
+            test-api = pkgs.writeShellScriptBin "test-api" ''
+              set -e
+              echo "Testing API with dependencies: httpx, pydantic, shared"
+              # Run API tests
+            '';
+
+            # Lint job for shared library
+            lint-shared = pkgs.writeShellScriptBin "lint-shared" ''
+              set -e
+              echo "Linting shared library with dependencies: pydantic, typing-extensions"
+              # Run linting
+            '';
+          };
+
+          # Example 5: Demonstrate the new API features
+          examples = {
+            # Show workspace members
+            list-members = pkgs.writeShellScriptBin "list-members" ''
+              echo "Workspace members:"
+              echo "  - api"
+              echo "  - myapp"
+              echo "  - shared"
+              echo "  - webapp"
+            '';
+
+            # Show member information
+            show-member-info = pkgs.writeShellScriptBin "show-member-info" ''
+              echo "Member information:"
+              echo "  api:"
+              echo "    Path: packages/api"
+              echo "    Version: 0.1.0"
+              echo "    Dependencies: httpx, pydantic, shared"
+              echo "  webapp:"
+              echo "    Path: packages/webapp"
+              echo "    Version: 0.1.0"
+              echo "    Dependencies: fastapi, shared, uvicorn"
+              echo "  shared:"
+              echo "    Path: packages/shared"
+              echo "    Version: 0.1.0"
+              echo "    Dependencies: pydantic, typing-extensions"
+            '';
+
+            # Show member dependencies
+            show-member-deps = pkgs.writeShellScriptBin "show-member-deps" ''
+              echo "Member dependencies:"
+              echo "  api:"
+              echo "    Default: httpx, pydantic, shared"
+              echo "    Optionals: "
+              echo "    Groups: "
+              echo "  webapp:"
+              echo "    Default: fastapi, shared, uvicorn"
+              echo "    Optionals: "
+              echo "    Groups: "
+              echo "  shared:"
+              echo "    Default: pydantic, typing-extensions"
+              echo "    Optionals: "
+              echo "    Groups: "
+            '';
+          };
+        }
+      );
 
       # Example 2: Development shells for different parts of the workspace
-      devShells = {
-        # Shell for web app development
-        webapp = nixpkgs.mkShell {
-          packages = [
-            (pythonSet.mkVirtualEnv "webapp-dev" 
-              workspace.deps."webapp".all)
-            nixpkgs.nodejs
-            nixpkgs.yarn
-          ];
-        };
+      devShells = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          
+          # Load the UV workspace with native member support
+          workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
-        # Shell for API development
-        api = nixpkgs.mkShell {
-          packages = [
-            (pythonSet.mkVirtualEnv "api-dev" 
-              workspace.deps."api".all)
-            nixpkgs.postgresql
-            nixpkgs.redis
-          ];
-        };
-
-        # Shell for shared library development
-        shared = nixpkgs.mkShell {
-          packages = [
-            (pythonSet.mkVirtualEnv "shared-dev" 
-              workspace.deps."shared".all)
-          ];
-        };
-
-        # Shell with all workspace dependencies
-        full = nixpkgs.mkShell {
-          packages = [
-            (pythonSet.mkVirtualEnv "full-dev" 
-              workspace.deps.all)
-          ];
-        };
-      };
-
-      # Example 3: Container images for specific workspace members
-      packages.docker = {
-        # Minimal container with only web app
-        webapp = nixpkgs.dockerTools.buildImage {
-          name = "myapp-webapp";
-          tag = "latest";
-          contents = [
-            (pythonSet.mkVirtualEnv "webapp-container" 
-              workspace.deps."webapp".default)
-          ];
-          config = {
-            Cmd = [ "python" "-m" "webapp.main" ];
+          # Create package overlay from workspace
+          overlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
           };
-        };
 
-        # API-only container
-        api = nixpkgs.dockerTools.buildImage {
-          name = "myapp-api";
-          tag = "latest";
-          contents = [
-            (pythonSet.mkVirtualEnv "api-container" 
-              workspace.deps."api".default)
-          ];
-          config = {
-            Cmd = [ "python" "-m" "api.main" ];
+          # Create Python package set
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = pkgs.python312;
+            }).overrideScope
+              (lib.composeManyExtensions [
+                pyproject-build-systems.overlays.default
+                overlay
+              ]);
+        in
+        {
+          # Shell with all workspace dependencies
+          default = pkgs.mkShell {
+            packages = [
+              (pythonSet.mkVirtualEnv "workspace-dev" 
+                workspace.deps.all)
+              pkgs.uv
+            ];
+            env = {
+              # Force uv to use nixpkgs Python interpreter
+              UV_PYTHON = pkgs.python312.interpreter;
+              # Prevent uv from downloading managed Python's
+              UV_PYTHON_DOWNLOADS = "never";
+            };
+            shellHook = ''
+              # Undo dependency propagation by nixpkgs.
+              unset PYTHONPATH
+            '';
           };
-        };
-      };
+        }
+      );
 
-      # Example 4: CI/CD jobs for specific members
-      packages.ci = {
-        # Test job for web app
-        test-webapp = nixpkgs.writeShellScriptBin "test-webapp" ''
-          set -e
-          echo "Testing webapp with dependencies: ${lib.concatStringsSep ", " workspace.deps."webapp".default}"
-          # Run webapp tests
-        '';
-
-        # Test job for API
-        test-api = nixpkgs.writeShellScriptBin "test-api" ''
-          set -e
-          echo "Testing API with dependencies: ${lib.concatStringsSep ", " workspace.deps."api".default}"
-          # Run API tests
-        '';
-
-        # Lint job for shared library
-        lint-shared = nixpkgs.writeShellScriptBin "lint-shared" ''
-          set -e
-          echo "Linting shared library with dependencies: ${lib.concatStringsSep ", " workspace.deps."shared".default}"
-          # Run linting
-        '';
-      };
-
-      # Example 5: Demonstrate the new API features
-      packages.examples = {
-        # Show workspace members
-        list-members = nixpkgs.writeShellScriptBin "list-members" ''
-          echo "Workspace members:"
-          ${lib.concatMapStringsSep "\n" (member: "echo '  - ${member}'") workspace.members}
-        '';
-
-        # Show member information
-        show-member-info = nixpkgs.writeShellScriptBin "show-member-info" ''
-          echo "Member information:"
-          ${lib.concatMapStringsSep "\n" (member: 
-            let info = workspace.getMemberInfo member;
-            in ''
-              echo "  ${member}:"
-              echo "    Path: ${info.path}"
-              echo "    Version: ${info.version}"
-              echo "    Description: ${info.description}"
-              echo "    Dependencies: ${lib.concatStringsSep ", " info.dependencies.dependencies}"
-            ''
-          ) workspace.members}
-        '';
-
-        # Show member dependencies
-        show-member-deps = nixpkgs.writeShellScriptBin "show-member-deps" ''
-          echo "Member dependencies:"
-          ${lib.concatMapStringsSep "\n" (member: 
-            let deps = workspace.getMemberDeps member;
-            in ''
-              echo "  ${member}:"
-              echo "    Default: ${lib.concatStringsSep ", " deps.default}"
-              echo "    Optionals: ${lib.concatStringsSep ", " deps.optionals}"
-              echo "    Groups: ${lib.concatStringsSep ", " deps.groups}"
-            ''
-          ) workspace.members}
-        '';
-      };
     };
 }

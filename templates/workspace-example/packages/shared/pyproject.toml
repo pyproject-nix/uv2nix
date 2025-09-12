@@ -8,6 +8,9 @@ dependencies = [
     "typing-extensions",
 ]
 
+[tool.uv]
+package = true
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

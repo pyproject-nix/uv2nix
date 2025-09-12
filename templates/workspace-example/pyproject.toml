@@ -4,9 +4,8 @@ version = "0.1.0"
 description = "Example workspace demonstrating native UV support"
 requires-python = ">=3.12"
 dependencies = [
-    "webapp",
-    "api",
-    "shared",
+    "tqdm>=4,<5",
+    "click>=8.1.0",
 ]
 
 [tool.uv.sources]
