@@ -1,0 +1,18 @@
+[project]
+name = "cli"
+version = "0.1.0"
+description = "CLI application"
+requires-python = ">=3.12"
+dependencies = [
+    "shared",
+    "click",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

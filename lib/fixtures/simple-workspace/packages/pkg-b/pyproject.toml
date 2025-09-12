@@ -1,0 +1,13 @@
+[project]
+name = "pkg-b"
+version = "0.1.0"
+description = "Package B"
+requires-python = ">=3.12"
+dependencies = [
+    "pkg-a",
+    "click",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

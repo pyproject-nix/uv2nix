@@ -1,0 +1,25 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared utilities package"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic",
+    "click",
+]
+
+[project.optional-dependencies]
+all = [
+    "requests",
+    "aiohttp",
+]
+
+[project.dependency-groups]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
