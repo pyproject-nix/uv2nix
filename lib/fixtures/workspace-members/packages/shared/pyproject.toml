@@ -1,0 +1,24 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared utilities"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.5.0",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+all = [
+    "pydantic[email]>=2.5.0",
+    "click[colors]>=8.1.0",
+]
+
+[dependency-groups]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[tool.uv]
+package = true

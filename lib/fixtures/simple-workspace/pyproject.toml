@@ -1,15 +1,11 @@
 [project]
 name = "simple-workspace"
 version = "0.1.0"
-description = "Simple workspace for testing"
+description = "Simple workspace with two members"
 requires-python = ">=3.12"
 dependencies = [
-    "click",
+    "click>=8.1.0",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [tool.uv.workspace]
 members = [
@@ -20,3 +16,7 @@ members = [
 [tool.uv.sources]
 pkg-a = { workspace = true }
 pkg-b = { workspace = true }
+
+[tool.uv]
+no-build = false
+no-binary = false

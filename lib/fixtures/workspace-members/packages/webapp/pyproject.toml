@@ -1,0 +1,28 @@
+[project]
+name = "webapp"
+version = "0.1.0"
+description = "Web application component"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.0.0",
+    "shared",
+    "requests[socks]>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+]
+
+[dependency-groups]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[tool.uv]
+package = true

@@ -61,43 +61,52 @@ let
 
   getSubComponents = p: path.subpath.components (path.splitRoot p).subpath;
 
-  # Parse dependencies from a pyproject.toml project section
-  parseProjectDependencies = project:
+  # Extract workspace member dependencies from uv.lock
+  # This is more reliable than parsing pyproject.toml files
+  extractMemberDependenciesFromLock = uvLock:
     let
-      deps = project.dependencies or [];
-      optionalDeps = project.optional-dependencies or {};
-      devDeps = project."dependency-groups" or {};
+      # Find all workspace packages (those with editable source)
+      workspacePackages = builtins.filter (pkg: 
+        pkg.source ? editable
+      ) uvLock.package;
+      
+      # Create a mapping from package name to dependencies
+      packageDeps = builtins.listToAttrs (
+        map (pkg: {
+          name = pkg.name;
+          value = {
+            # Convert dependencies to the format expected by mkVirtualEnv
+            # { "package-name" = [ "extra1" "extra2" ]; }
+            dependencies = builtins.listToAttrs (
+              map (dep: {
+                name = dep.name;
+                value = if dep ? extra then dep.extra else [];
+              }) (if pkg ? dependencies then pkg.dependencies else [])
+            );
+            # Extract optional dependencies and groups from metadata if available
+            optional-dependencies = {};
+            dev-dependencies = {};
+            # Store package metadata from uv.lock
+            package-info = {
+              name = pkg.name;
+              version = if pkg ? version then pkg.version else "0.0.0";
+              source = pkg.source;
+            };
+          };
+        }) workspacePackages
+      );
     in
-    {
-      dependencies = deps;
-      optional-dependencies = optionalDeps;
-      dev-dependencies = devDeps;
-    };
+    packageDeps;
 
-  # Parse member dependencies from pyproject.toml
-  parseMemberDependencies = workspaceRoot: memberPath:
+  # Get workspace member names from uv.lock (more reliable than directory names)
+  getMemberNamesFromLock = uvLock:
     let
-      memberPyproject = importTOML (workspaceRoot + "/${memberPath}/pyproject.toml");
-      project = memberPyproject.project or {};
+      # Find all workspace packages (those with editable source)
+      workspacePackages = builtins.filter (pkg: 
+        pkg.source ? editable
+      ) uvLock.package;
     in
-    parseProjectDependencies project;
-
-  # Get workspace member names from discovered paths
-  getMemberNames = workspaceRoot: members:
-    map (memberPath: 
-      if memberPath == "/" then
-        # Virtual root case - try to get name from pyproject.toml
-        let
-          pyproject = importTOML (workspaceRoot + "/pyproject.toml");
-        in
-        if pyproject ? project then pyproject.project.name else "workspace"
-      else
-        # Regular member - get name from last path component
-        let
-          pathParts = splitString "/" memberPath;
-        in
-        (elemAt pathParts ((length pathParts) - 1))
-    ) members;
+    map (pkg: pkg.name) workspacePackages;
 
 in
 
@@ -187,26 +196,17 @@ fix (self: {
       !(config'.no-binary && config'.no-build)
     ) "Both tool.uv.no-build and tool.uv.no-binary are set to true, making the workspace unbuildable";
     let
-      # Discover workspace members
-      discoveredMembers = self.discoverWorkspace { inherit workspaceRoot pyproject; };
-      memberNames = getMemberNames workspaceRoot discoveredMembers;
+      # Get member names from uv.lock (more reliable than directory discovery)
+      memberNames = getMemberNamesFromLock uvLock;
       
-      # Create member name to path mapping
-      memberPaths = listToAttrs (
-        map (i: nameValuePair (elemAt memberNames i) (elemAt discoveredMembers i)) 
-        (lib.range 0 ((length memberNames) - 1))
-      );
-      
-      # Parse dependencies for each member
-      memberDependencies = mapAttrs (name: path: 
-        parseMemberDependencies workspaceRoot path
-      ) memberPaths;
+      # Extract member dependencies from uv.lock (more reliable than pyproject.toml)
+      memberDependenciesFromLock = extractMemberDependenciesFromLock uvLock;
       
       # Create dependency specifications for each member
-      memberDeps = mapAttrs (name: deps:
+      memberDepsData = mapAttrs (name: deps:
         {
-          # Default dependencies (no optional deps or groups)
-          default = deps.dependencies;
+          # Default dependencies - convert from uv.lock format to list format for compatibility
+          default = attrNames deps.dependencies;
           # All optional dependencies
           optionals = attrNames deps.optional-dependencies;
           # All dependency groups
@@ -214,7 +214,7 @@ fix (self: {
           # All optional dependencies and groups
           all = unique (attrNames deps.optional-dependencies ++ attrNames deps.dev-dependencies);
         }
-      ) memberDependencies;
+      ) memberDependenciesFromLock;
       
     in
     rec {
@@ -341,18 +341,18 @@ fix (self: {
           default = mapAttrs (
             name: _: workspaceProjects.${name}.pyproject.tool.uv.default-groups or [ ]
           ) packages';
-        } // memberDeps;
+        };
 
       /*
         Get dependencies for a specific workspace member
         
         # Arguments
         
-        `memberName`: Name of the workspace member
+        `memberName`: Name of the workspace member (package name from uv.lock)
       */
       getMemberDeps = memberName: 
-        if hasAttr memberName memberDeps then
-          memberDeps.${memberName}
+        if hasAttr memberName memberDepsData then
+          memberDepsData.${memberName}
         else
           throw "Workspace member '${memberName}' not found. Available members: ${concatStringsSep ", " memberNames}";
 
@@ -361,25 +361,30 @@ fix (self: {
         
         # Arguments
         
-        `memberName`: Name of the workspace member
+        `memberName`: Name of the workspace member (package name from uv.lock)
       */
       getMemberInfo = memberName:
-        if hasAttr memberName memberPaths then
+        if hasAttr memberName memberDependenciesFromLock then
           let
-            memberPath = memberPaths.${memberName};
-            memberPyproject = importTOML (workspaceRoot + "/${memberPath}/pyproject.toml");
-            project = memberPyproject.project or {};
+            memberData = memberDependenciesFromLock.${memberName};
+            packageInfo = memberData.package-info;
           in
           {
             name = memberName;
-            path = memberPath;
-            version = project.version or "0.0.0";
-            description = project.description or "";
-            dependencies = memberDependencies.${memberName};
-            pyproject = memberPyproject;
+            version = packageInfo.version;
+            source = packageInfo.source;
+            path = if packageInfo.source ? editable then packageInfo.source.editable else "";
+            dependencies = attrNames memberData.dependencies;
+            optional-dependencies = memberData.optional-dependencies;
+            dev-dependencies = memberData.dev-dependencies;
           }
         else
           throw "Workspace member '${memberName}' not found. Available members: ${concatStringsSep ", " memberNames}";
+
+      /*
+        Workspace member dependencies
+      */
+      memberDeps = memberDepsData;
 
       /*
         List all workspace member names

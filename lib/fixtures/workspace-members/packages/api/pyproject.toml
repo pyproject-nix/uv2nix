@@ -1,0 +1,27 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "API component"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.104.0",
+    "shared",
+    "uvicorn>=0.24.0",
+]
+
+[project.optional-dependencies]
+prod = [
+    "gunicorn>=21.0.0",
+]
+
+[dependency-groups]
+lint = [
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[tool.uv]
+package = true

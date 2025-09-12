@@ -1,0 +1,24 @@
+[project]
+name = "test-workspace"
+version = "0.1.0"
+description = "Test workspace with multiple members"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.31.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "packages/webapp",
+    "packages/api",
+    "packages/shared",
+]
+
+[tool.uv.sources]
+webapp = { workspace = true }
+api = { workspace = true }
+shared = { workspace = true }
+
+[tool.uv]
+no-build = false
+no-binary = false

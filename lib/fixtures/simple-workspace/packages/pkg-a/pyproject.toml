@@ -4,9 +4,8 @@ version = "0.1.0"
 description = "Package A"
 requires-python = ">=3.12"
 dependencies = [
-    "requests",
+    "requests>=2.31.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.uv]
+package = true
