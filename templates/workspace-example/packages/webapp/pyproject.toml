@@ -1,0 +1,17 @@
+[project]
+name = "webapp"
+version = "0.1.0"
+description = "Web application component"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "shared",
+]
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

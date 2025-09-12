@@ -15,6 +15,7 @@
   - [Development scripts](./patterns/scripts.md)
   - [Using `meta`](./patterns/meta.md)
   - [Shipping applications](./patterns/applications.md)
+  - [Working with workspace members](./patterns/workspace-members.md)
   - [Cross compilation](./patterns/cross/index.md)
   - [Building wheels/sdists](./patterns/dist.md)
   - [Installing nixpkgs packages](./patterns/nixpkgs-wheels.md)

@@ -1,0 +1,17 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "API library component"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic",
+    "httpx",
+    "shared",
+]
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
