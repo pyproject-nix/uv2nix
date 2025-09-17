@@ -2,20 +2,12 @@
 name = "hello-world"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "urllib3>=2.2.3",
-]
+dependencies = [ ]
 
 [project.scripts]
 hello = "hello_world:hello"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[dependency-groups]
-dev = [
-    "ruff>=0.6.7",
-]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"

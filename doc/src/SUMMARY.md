@@ -5,7 +5,7 @@
 
 # Usage
 
-- [Getting started](./usage/hello-world.md)
+- [Getting started](./usage/getting-started.md)
 
 - [Overriding](./overriding/index.md)
 
@@ -27,6 +27,9 @@
 - [Inline script metadata](./usage/inline-metadata.md)
 
 - [Conflicts support](./conflicts.md)
+
+# [Templates](./templates.md)
+- [Flake Templates](./templates.md)
 
 # Meta
 
