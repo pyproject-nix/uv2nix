@@ -41,7 +41,7 @@ let
       assert repository.type == "Git";
       let
         urlToName =
-          url: rev:
+          _url: rev:
           let
             matched = builtins.match "^.*/([^/]*)(\\.git)?$" repository.url;
 

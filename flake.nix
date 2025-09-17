@@ -84,7 +84,8 @@
                 pkgs.python3
                 self.formatter.${system}
                 pkgs.npins
-              ] ++ self.packages.${system}.doc.nativeBuildInputs;
+              ]
+              ++ self.packages.${system}.doc.nativeBuildInputs;
               env = {
                 UV_NO_SYNC = "1";
                 UV_PYTHON_DOWNLOADS = "never";

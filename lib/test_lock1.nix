@@ -204,7 +204,7 @@ in
             inherit environ;
           };
         in
-        mapAttrs (name: package: package.name + "-" + package.version) resolved; # Make expected only contain relevent data
+        mapAttrs (_name: package: package.name + "-" + package.version) resolved; # Make expected only contain relevent data
 
     in
     mapAttrs

@@ -43,13 +43,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         setupHooks
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   scikit-build-core =
@@ -70,31 +69,29 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         patches
         ;
 
-      passthru.dependencies =
-        {
-          packaging = [ ];
-          pathspec = [ ];
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.11") {
-          exceptiongroup = [ ];
-          tomli = [ ];
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.9") {
-          importlib-resources = [ ];
-          typing-extensions = [ ];
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.8") {
-          importlib-metadata = [ ];
-        };
+      passthru.dependencies = {
+        packaging = [ ];
+        pathspec = [ ];
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.11") {
+        exceptiongroup = [ ];
+        tomli = [ ];
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.9") {
+        importlib-resources = [ ];
+        typing-extensions = [ ];
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.8") {
+        importlib-metadata = [ ];
+      };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          hatchling = [ ];
-          hatch-vcs = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        hatchling = [ ];
+        hatch-vcs = [ ];
+      };
     };
 
   ninja =
@@ -115,13 +112,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         preBuild
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   cython =
@@ -141,14 +137,13 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         setupHook
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-          pkg-config
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+        pkg-config
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+      };
     };
 
   pytest-runner =
@@ -167,14 +162,13 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         hash = "sha256-cNRzlYWnAI83v0kzwBP9sye4h4paafy7MxbIiILw9Js=";
       };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-          setuptools-scm = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+        setuptools-scm = [ ];
+      };
     };
 
   hatchling =
@@ -194,20 +188,20 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      passthru.dependencies =
-        {
-          packaging = [ ];
-          pathspec = [ ];
-          pluggy = [ ];
-          trove-classifiers = [ ];
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.11") {
-          tomli = [ ];
-        };
+      passthru.dependencies = {
+        packaging = [ ];
+        pathspec = [ ];
+        pluggy = [ ];
+        trove-classifiers = [ ];
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.11") {
+        tomli = [ ];
+      };
 
       nativeBuildInputs = [
         pyprojectHook
-      ] ++ resolveBuildSystem finalAttrs.passthru.dependencies;
+      ]
+      ++ resolveBuildSystem finalAttrs.passthru.dependencies;
     });
 
   pluggy =
@@ -225,13 +219,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools-scm = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools-scm = [ ];
+      };
     };
 
   trove-classifiers =
@@ -249,14 +242,13 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-          calver = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+        calver = [ ];
+      };
     };
 
   build =
@@ -276,23 +268,21 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      passthru.dependencies =
-        {
-          packaging = [ ];
-          pyproject-hooks = [ ];
+      passthru.dependencies = {
+        packaging = [ ];
+        pyproject-hooks = [ ];
 
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.11") {
-          tomli = [ ];
-        };
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.11") {
+        tomli = [ ];
+      };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   pyproject-hooks =
@@ -310,13 +300,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   packaging =
@@ -334,13 +323,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   setuptools-scm =
@@ -362,17 +350,16 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         ;
 
       passthru = {
-        dependencies =
-          {
-            packaging = [ ];
-            setuptools = [ ];
-          }
-          // lib.optionalAttrs (python.pythonOlder "3.11") {
-            tomli = [ ];
-          }
-          // lib.optionalAttrs (python.pythonOlder "3.10") {
-            typing-extensions = [ ];
-          };
+        dependencies = {
+          packaging = [ ];
+          setuptools = [ ];
+        }
+        // lib.optionalAttrs (python.pythonOlder "3.11") {
+          tomli = [ ];
+        }
+        // lib.optionalAttrs (python.pythonOlder "3.10") {
+          typing-extensions = [ ];
+        };
 
         optional-dependencies = {
           toml = {
@@ -384,18 +371,17 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         };
       };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem (
-          {
-            setuptools = [ ];
-          }
-          // lib.optionalAttrs (python.pythonOlder "3.11") {
-            tomli = [ ];
-          }
-        );
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem (
+        {
+          setuptools = [ ];
+        }
+        // lib.optionalAttrs (python.pythonOlder "3.11") {
+          tomli = [ ];
+        }
+      );
     };
 
   setuptools =
@@ -417,13 +403,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
 
       passthru.dependencies.wheel = [ ];
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   tomli-w =
@@ -441,13 +426,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   wheel =
@@ -465,13 +449,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   calver =
@@ -490,13 +473,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         postPatch
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+      };
     };
 
   hatch-fancy-pypi-readme =
@@ -518,13 +500,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         hatchling = [ ];
       };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          hatchling = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        hatchling = [ ];
+      };
     };
 
   hatch-vcs =
@@ -547,13 +528,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         setuptools-scm = [ ];
       };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          hatchling = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        hatchling = [ ];
+      };
     });
 
   hatch-requirements-txt =
@@ -576,13 +556,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         packaging = [ ];
       };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          hatchling = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        hatchling = [ ];
+      };
     });
 
   setuptools-rust =
@@ -602,24 +581,22 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      passthru.dependencies =
-        {
-          semantic-version = [ ];
-          setuptools = [ ];
-          typing-extensions = [ ];
-        }
-        // lib.optionalAttrs (python.pythonOlder "3.11") {
-          tomli = [ ];
-        };
+      passthru.dependencies = {
+        semantic-version = [ ];
+        setuptools = [ ];
+        typing-extensions = [ ];
+      }
+      // lib.optionalAttrs (python.pythonOlder "3.11") {
+        tomli = [ ];
+      };
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-          setuptools-scm = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+        setuptools-scm = [ ];
+      };
     };
 
   semantic-version =
@@ -637,13 +614,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+      };
     };
 
   typing-extensions =
@@ -661,13 +637,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   pathspec =
@@ -685,13 +660,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   libcst =
@@ -716,17 +690,16 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
       passthru.dependencies = {
         pyyaml = [ ];
       };
-      nativeBuildInputs =
-        [
-          pyprojectHook
-          rustPlatform.cargoSetupHook
-          cargo
-          rustc
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-          setuptools-rust = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+        rustPlatform.cargoSetupHook
+        cargo
+        rustc
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+        setuptools-rust = [ ];
+      };
     };
 
   pyyaml =
@@ -744,13 +717,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          setuptools = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        setuptools = [ ];
+      };
     };
 
   editables =
@@ -768,13 +740,12 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 
   installer =
@@ -792,12 +763,11 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         meta
         ;
 
-      nativeBuildInputs =
-        [
-          pyprojectHook
-        ]
-        ++ resolveBuildSystem {
-          flit-core = [ ];
-        };
+      nativeBuildInputs = [
+        pyprojectHook
+      ]
+      ++ resolveBuildSystem {
+        flit-core = [ ];
+      };
     };
 }
