@@ -5,7 +5,7 @@
 
 # Usage
 
-- [Basic usage](./usage/hello-world.md)
+- [Getting started](./usage/hello-world.md)
 
 - [Overriding](./overriding/index.md)
 
@@ -27,10 +27,6 @@
 - [Inline script metadata](./usage/inline-metadata.md)
 
 - [Conflicts support](./conflicts.md)
-
-- [Showcases]()
-  - [Django](./showcases/django.md)
-
 
 # Meta
 
