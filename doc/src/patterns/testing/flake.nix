@@ -23,9 +23,6 @@
     };
   };
 
-  # This example shows testing with pytest using uv2nix.
-  # You should first read and understand the hello-world example before this one.
-
   outputs =
     {
       nixpkgs,

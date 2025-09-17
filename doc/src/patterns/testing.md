@@ -11,9 +11,10 @@ This usage pattern shows how to:
 
 ## flake.nix
 ```nix
-{{#include ../../../templates/testing/flake.nix}}
+{{#include ./testing/flake.nix}}
 ```
+
 ## pyproject.toml
 ```nix
-{{#include ../../../templates/testing/pyproject.toml}}
+{{#include ./testing/pyproject.toml}}
 ```
