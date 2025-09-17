@@ -34,8 +34,6 @@
     }:
     let
       inherit (nixpkgs) lib;
-
-      # Map over all nixpkgs supported systems to create the `packages` set
       forAllSystems = lib.genAttrs lib.systems.flakeExposed;
 
       # Load all Python scripts from ./scripts directory
@@ -56,26 +54,16 @@
       packages' = forAllSystems (
         system:
         let
-          # Nixpkgs package set
           pkgs = nixpkgs.legacyPackages.${system};
-
-          # Use Python 3.12
-          python = pkgs.python312;
-
-          # Use base package set from pyproject.nix builders
+          python = pkgs.python3;
           baseSet = pkgs.callPackage pyproject-nix.build.packages {
             inherit python;
           };
-
-          # Implement build fixups here.
-          pyprojectOverrides = _final: _prev: {
-          };
-
         in
         lib.mapAttrs (
-          name: script:
+          _name: script:
           let
-            # Create package overlay from workspace.
+            # Create package overlay from script
             overlay = script.mkOverlay {
               sourcePreference = "wheel";
             };
@@ -83,9 +71,8 @@
             # Construct package set
             pythonSet = baseSet.overrideScope (
               lib.composeManyExtensions [
-                pyproject-build-systems.overlays.default
+                pyproject-build-systems.overlays.wheel
                 overlay
-                pyprojectOverrides
               ]
             );
           in
@@ -117,34 +104,6 @@
           type = "app";
           program = "${script}";
         }) self.packages.${system}
-      );
-
-      # Use an impure devshell as we're managing many scripts and can't build a single cohesive environment.
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          python = pkgs.python312;
-        in
-        {
-          default = pkgs.mkShell {
-            packages = [
-              python
-              pkgs.uv
-            ];
-            env =
-              {
-                UV_PYTHON_DOWNLOADS = "never";
-                UV_PYTHON = python.interpreter;
-              }
-              // lib.optionalAttrs pkgs.stdenv.isLinux {
-                LD_LIBRARY_PATH = lib.makeLibraryPath pkgs.pythonManylinuxPackages.manylinux1;
-              };
-            shellHook = ''
-              unset PYTHONPATH
-            '';
-          };
-        }
       );
     };
 }
