@@ -748,6 +748,26 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
       };
     };
 
+  uv-build =
+    {
+      stdenv,
+      python3Packages,
+      pyprojectWheelHook
+    }:
+    stdenv.mkDerivation {
+      inherit (python3Packages.uv-build)
+        pname
+        version
+        meta
+        ;
+
+      src = python3Packages.uv-build.dist;
+
+      nativeBuildInputs = [
+        pyprojectWheelHook
+      ];
+    };
+
   installer =
     {
       stdenv,

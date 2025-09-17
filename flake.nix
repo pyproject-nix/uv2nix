@@ -128,9 +128,18 @@
                   inputs' = inputs // {
                     uv2nix = self;
                     self = flake;
-                    pyproject-build-systems = {
-                      overlays.default = import ./dev/build-systems.nix;
-                    };
+                    pyproject-build-systems =
+                      let
+                        overlay = import ./dev/build-systems.nix;
+                      in
+                      {
+                        # Expose same attrs as pyproject-build-systems
+                        overlays = {
+                          default = overlay;
+                          wheel = overlay;
+                          sdist = overlay;
+                        };
+                      };
                   };
                 in
                 flake;
