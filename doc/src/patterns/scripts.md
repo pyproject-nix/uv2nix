@@ -10,5 +10,5 @@ This pattern shows how to:
 ## `flake.nix`
 
 ```nix
-{{#include ../../../templates/development-scripts/flake.nix}}
+{{#include ./development-scripts/flake.nix}}
 ```

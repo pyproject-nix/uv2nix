@@ -41,10 +41,6 @@
         sourcePreference = "wheel"; # or sourcePreference = "sdist";
       };
 
-      pyprojectOverrides = _final: _prev: {
-        # Implement build fixups here.
-      };
-
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
       python = pkgs.python312;
@@ -57,7 +53,6 @@
             lib.composeManyExtensions [
               pyproject-build-systems.overlays.default
               overlay
-              pyprojectOverrides
             ]
           );
 
