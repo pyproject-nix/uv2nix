@@ -10,7 +10,8 @@
     ]
   },
   "ignorePaths": [
-    "lib/fixtures/**"
+    "lib/fixtures/**",
+    "doc/**"
   ],
   "nix": {
     "enabled": true
