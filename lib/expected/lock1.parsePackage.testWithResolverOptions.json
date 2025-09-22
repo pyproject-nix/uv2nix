@@ -35,9 +35,9 @@
   "wheels": [
     {
       "file'": {
-        "abiTag": {
-          "tag": "none"
-        },
+        "abiTags": [
+          "none"
+        ],
         "buildTag": null,
         "distribution": "Arpeggio",
         "filename": "Arpeggio-2.0.2-py2.py3-none-any.whl",
