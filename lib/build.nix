@@ -333,7 +333,10 @@ in
                 }
               else
                 lib.warn "wheel url '${selectedWheel.url}' missing hash, falling back to builtins.fetchurl" (
-                  builtins.fetchurl selectedWheel.url
+                  builtins.fetchurl {
+                    name = srcFilename selectedWheel.url;
+                    inherit (selectedWheel) url;
+                  }
                 )
             # Get wheel from local path
             else if selectedWheel ? path then
