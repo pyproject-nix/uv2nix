@@ -1,0 +1,13 @@
+[project]
+name = "hello-tkinter"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [ ]
+
+[project.scripts]
+hello = "hello_tkinter:hello"
+
+[build-system]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"
