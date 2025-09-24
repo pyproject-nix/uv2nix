@@ -76,7 +76,6 @@
             packages = [
               virtualenv
               pkgs.uv
-              pkgs.sphinx
             ];
             env = {
               UV_NO_SYNC = "1";
