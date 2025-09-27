@@ -21,6 +21,7 @@
   - [Private packages](./patterns/private-deps.md)
   - [Patching packages](./patterns/patching-deps.md)
   - [Advanced build systems (editables)](./patterns/advanced-build-systems.md)
+  - [Source filtering](./patterns/source-filtering.md)
 
 - [Platform quirks](./platform-quirks.md)
 

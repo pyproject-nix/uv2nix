@@ -157,6 +157,8 @@ editablePythonSet = pythonSet.overrideScope editableOverlay;
 virtualenv = editablePythonSet.mkVirtualEnv "hello-world-dev-env" workspace.deps.all;
 ```
 
+While not strictly required it's a good idea to apply [source filtering](../patterns/source-filtering.html) to reduce how often editable packages need to be rebuilt.
+
 The virtualenv can then be used with [`mkShell`](https://nixos.org/manual/nixpkgs/unstable/#sec-pkgs-mkShell):
 
 ```nix
