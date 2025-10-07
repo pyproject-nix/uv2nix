@@ -752,7 +752,7 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
     {
       stdenv,
       python3Packages,
-      pyprojectWheelHook
+      pyprojectWheelHook,
     }:
     stdenv.mkDerivation {
       inherit (python3Packages.uv-build)
