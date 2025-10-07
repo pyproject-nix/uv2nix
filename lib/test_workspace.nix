@@ -58,105 +58,104 @@ in
     }
   ) workspaces;
 
-  loadWorkspace.deps =
-    let
-      mkTest =
-        workspaceRoot:
-        let
-          ws = workspace.loadWorkspace { inherit workspaceRoot; };
-        in
-        ws.deps;
-    in
-    {
-      testTrivial = {
-        expr = mkTest ./fixtures/trivial;
-        expected = {
-          all = {
-            trivial = [ ];
+  loadWorkspace = {
+    deps =
+      let
+        mkTest =
+          workspaceRoot:
+          let
+            ws = workspace.loadWorkspace { inherit workspaceRoot; };
+          in
+          ws.deps;
+      in
+      {
+        testTrivial = {
+          expr = mkTest ./fixtures/trivial;
+          expected = {
+            all = {
+              trivial = [ ];
+            };
+            groups = {
+              trivial = [ ];
+            };
+            optionals = {
+              trivial = [ ];
+            };
+            default = {
+              trivial = [ ];
+            };
           };
-          groups = {
-            trivial = [ ];
+        };
+
+        testOptionalDeps = {
+          expr = mkTest ./fixtures/optional-deps;
+          expected = rec {
+            optionals = {
+              optional-deps = [ "haxx" ];
+            };
+            all = optionals;
+            groups = {
+              optional-deps = [ ];
+            };
+            default = {
+              optional-deps = [ ];
+            };
           };
-          optionals = {
-            trivial = [ ];
-          };
-          default = {
-            trivial = [ ];
+        };
+
+        testDependencyGroups = {
+          expr = mkTest ./fixtures/dependency-groups;
+          expected = rec {
+            all = groups;
+            groups = {
+              dependency-groups = [
+                "dev"
+                "group-a"
+              ];
+            };
+            optionals = {
+              dependency-groups = [ ];
+            };
+            default = {
+              dependency-groups = [ ];
+            };
           };
         };
       };
 
-      testOptionalDeps = {
-        expr = mkTest ./fixtures/optional-deps;
-        expected = rec {
-          optionals = {
-            optional-deps = [ "haxx" ];
-          };
-          all = optionals;
-          groups = {
-            optional-deps = [ ];
-          };
-          default = {
-            optional-deps = [ ];
-          };
-        };
-      };
+    # Test workspaceRoot passed as a string
+    # This is analogous to using Flake inputs which are passed as contextful strings.
+    stringlyWorkspace =
+      let
+        mkTestSet =
+          workspaceRoot:
+          let
+            ws = workspace.loadWorkspace { inherit workspaceRoot; };
 
-      testDependencyGroups = {
-        expr = mkTest ./fixtures/dependency-groups;
-        expected = rec {
-          all = groups;
-          groups = {
-            dependency-groups = [
-              "dev"
-              "group-a"
-            ];
-          };
-          optionals = {
-            dependency-groups = [ ];
-          };
-          default = {
-            dependency-groups = [ ];
-          };
-        };
-      };
-    };
+            overlay = ws.mkPyprojectOverlay { sourcePreference = "wheel"; };
 
-  # Test workspaceRoot passed as a string
-  # This is analogous to using Flake inputs which are passed as contextful strings.
-  loadWorkspace.stringlyWorkspace =
-    let
-      mkTestSet =
-        workspaceRoot:
-        let
-          ws = workspace.loadWorkspace { inherit workspaceRoot; };
+            pythonSet =
+              (pkgs.callPackage pyproject-nix.build.packages {
+                python = pkgs.python312;
+              }).overrideScope
+                overlay;
+          in
+          pythonSet;
 
-          overlay = ws.mkPyprojectOverlay { sourcePreference = "wheel"; };
+        wsRoot = "${./fixtures/workspace-flat}";
+        testSet = mkTestSet wsRoot;
 
-          pythonSet =
-            (pkgs.callPackage pyproject-nix.build.packages {
-              python = pkgs.python312;
-            }).overrideScope
-              overlay;
-        in
-        pythonSet;
-
-      wsRoot = "${./fixtures/workspace-flat}";
-      testSet = mkTestSet wsRoot;
-
-    in
-    {
-      # Test that the stringly src lookup is correct relative to the workspace root
-      testStringlySrc = {
+      in
+      {
         expr = testSet."pkg-a".src == "${wsRoot}/packages/pkg-a";
         expected = true;
       };
     };
 
-  # Test workspaceRoot passed as an attrset
-  # This is analogous to using builtins.fetchGit & such which return an attrset with an outPath member.
-  loadWorkspace.fetchedWorkspace =
-    let
+    # Test workspaceRoot passed as an attrset
+    # This is analogous to using builtins.fetchGit & such which return an attrset with an outPath member.
+    fetchedWorkspace =
+      let
       mkTestSet =
         workspaceRoot:
         let
@@ -184,5 +183,4 @@ in
         expected = true;
       };
     };
-
 }
