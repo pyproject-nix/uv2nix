@@ -197,7 +197,7 @@ fix (self: {
         _final: prev:
         let
           # Filter any local packages that might be deactivated by markers or other filtration mechanisms.
-          activeMembers = filter (name: !prev ? name) members;
+          activeMembers = filter (name: prev ? ${name}) members;
 
         in
         listToAttrs (
