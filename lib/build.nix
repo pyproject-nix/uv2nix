@@ -116,6 +116,14 @@ let
   # resulting in install failures.
   srcFilename = url: unquoteURL (baseNameOf url);
 
+  # Darwin hack:
+  # Uv uses reqwest, which user hyper, which in turn uses SystemConfiguration.framework to read system proxy settings.
+  # Even when using --offline the system proxy settings gets pulled in.
+  # Allow access to the Mach service to prevent the build from failing.
+  darwinSandboxProfile = ''
+    (allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))
+  '';
+
 in
 
 {
@@ -180,6 +188,9 @@ in
           optional-dependencies = mapAttrs (_: mkSpec) package.optional-dependencies;
           dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
         };
+      }
+      // optionalAttrs stdenv.isDarwin {
+        sandboxProfile = darwinSandboxProfile;
       }
       // {
         inherit (package) version;
@@ -419,6 +430,9 @@ in
       }
       // optionalAttrs (isGit && gitURL ? query.subdirectory) {
         sourceRoot = "source/${gitURL.query.subdirectory}";
+      }
+      // optionalAttrs stdenv.isDarwin {
+        sandboxProfile = darwinSandboxProfile;
       }
     );
 }
