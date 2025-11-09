@@ -33,5 +33,4 @@ in
 ```
 
 ## Flakes
-
-See [usage/hello-world](usage/hello-world.md).
+See [usage/getting-started](./usage/getting-started.md).
