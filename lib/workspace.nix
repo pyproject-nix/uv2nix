@@ -145,6 +145,13 @@ fix (self: {
       config = config';
 
       /*
+        Python constraints for project
+        .
+      */
+      inherit (uvLock) requires-python;
+
+
+      /*
         Generate an overlay to use with pyproject.nix's build infrastructure.
 
         See https://pyproject-nix.github.io/pyproject.nix/lib/build.html
