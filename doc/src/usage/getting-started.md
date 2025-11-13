@@ -38,6 +38,21 @@ You can now start [adding dependencies](https://docs.astral.sh/uv/#projects) & m
 
 ## Using pyproject.nix/uv2nix
 
+### Picking a Python interpreter
+
+As the compatible Python versions for a workspace are encoded in the Python project files we can automatically filter nixpkgs for known compatible interpreter derivation:
+```nix
+python = lib.head (pyproject-nix.lib.util.filterPythonInterpreters {
+  inherit (workspace) requires-python;
+  inherit (pkgs) pythonInterpreters;
+});
+```
+
+You can of course also pick a Python interpreter explicitly:
+```nix
+python = pkgs.python3;
+```
+
 ### Constructing a base Python set
 
 Uv2nix uses [`pyproject.nix` Python builders](https://pyproject-nix.github.io/pyproject.nix/build.html) which needs to be instantiated with a nixpkgs instance:
