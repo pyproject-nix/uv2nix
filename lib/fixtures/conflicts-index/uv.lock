@@ -1,0 +1,57 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+resolution-markers = [
+    "extra == 'group-15-conflicts-index-group-a' and extra != 'group-15-conflicts-index-group-b'",
+    "extra != 'group-15-conflicts-index-group-a' and extra == 'group-15-conflicts-index-group-b'",
+]
+conflicts = [[
+    { package = "conflicts-index", group = "group-a" },
+    { package = "conflicts-index", group = "group-b" },
+]]
+
+[options]
+exclude-newer = "2025-01-08T03:51:18Z"
+
+[[package]]
+name = "arpeggio"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "extra == 'group-15-conflicts-index-group-a' and extra != 'group-15-conflicts-index-group-b'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3d/ed/53c315e680fdf58818c0938f6c132df4342c95fc68977001244403fee476/Arpeggio-2.0.0.tar.gz", hash = "sha256:d6b03839019bb8a68785f9292ee6a36b1954eb84b925b84a6b8a5e1e26d3ed3d", size = 766110, upload-time = "2022-03-20T16:43:08.389Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/b7/62898ef180bbfea60d28678040ddbb50e36c180d5c56e9cc62b7944c4623/Arpeggio-2.0.0-py2.py3-none-any.whl", hash = "sha256:448e332deb0e9ccd04046f1c6c14529d197f41bc2fdb3931e43fc209042fbdd3", size = 54954, upload-time = "2022-03-20T16:43:05.092Z" },
+]
+
+[[package]]
+name = "arpeggio"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "extra != 'group-15-conflicts-index-group-a' and extra == 'group-15-conflicts-index-group-b'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/a5/4e39a94abf59bff8c9dde4880039172e0efe874453443e1e13651b6bd149/Arpeggio-2.0.1.tar.gz", hash = "sha256:8dfee59d546e0192e3c47f630f08f12ba7cf542caf157c58d516a193e3bfb854", size = 766688, upload-time = "2023-07-09T08:52:03.785Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/1f/01b7e8d3dec71b52a149ac04f48fcc8e559bda065bcb1b39d32a4f1da474/Arpeggio-2.0.1-py2.py3-none-any.whl", hash = "sha256:5372cf9daee84bd695e99f17371c844504ead3b1d96c70b95dfc54f957fe69de", size = 55285, upload-time = "2023-07-09T08:52:01.251Z" },
+]
+
+[[package]]
+name = "conflicts-index"
+version = "0.1.0"
+source = { editable = "." }
+
+[package.dev-dependencies]
+group-a = [
+    { name = "arpeggio", version = "2.0.0", source = { registry = "https://pypi.org/simple" } },
+]
+group-b = [
+    { name = "arpeggio", version = "2.0.1", source = { registry = "https://pypi.org/simple" } },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+group-a = [{ name = "arpeggio", specifier = "==2.0.0" }]
+group-b = [{ name = "arpeggio", specifier = "==2.0.1" }]

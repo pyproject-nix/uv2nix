@@ -1,10 +1,5 @@
 # Dependency conflicts
 
-<div class="warning">
-Uv exposes internally generated package markers(1), therefore uv2nix support for conflicts is limited and may have incorrect marker(2) evaluation results.
-</div>
-
-
 Uv has support for creating mutually exclusive groups of [conflicting dependencies](https://docs.astral.sh/uv/concepts/projects/config/#conflicting-dependencies).
 
 To use conflicting dependencies with uv2nix you have to tell it which conflict resolution to take when creating the package overlay:

@@ -1,0 +1,30 @@
+[project]
+name = "conflicts-index"
+version = "0.1.0"
+description = "Test project for conflicts with different indexes"
+readme = "README.md"
+authors = [
+    { name = "test", email = "test@test.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+group-a = [
+  "arpeggio==2.0.0",
+]
+group-b = [
+  "arpeggio==2.0.1",
+]
+
+[tool.uv]
+conflicts = [
+  [
+    { group = "group-a" },
+    { group = "group-b" },
+  ],
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
