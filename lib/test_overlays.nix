@@ -6,7 +6,7 @@
   ...
 }:
 let
-  inherit (lib) nameValuePair listToAttrs;
+  inherit (lib) nameValuePair listToAttrs optionalAttrs;
 in
 
 {
@@ -17,14 +17,21 @@ in
         {
           packages,
           environ ? { },
+          # Ambigious resolution
+          dependencies ? { },
         }:
         let
           ws = workspace.loadWorkspace { inherit workspaceRoot; };
 
-          overlay = ws.mkPyprojectOverlay {
-            sourcePreference = "wheel";
-            inherit environ;
-          };
+          overlay = ws.mkPyprojectOverlay (
+            {
+              sourcePreference = "wheel";
+              inherit environ;
+            }
+            // optionalAttrs (dependencies != { }) {
+              inherit dependencies;
+            }
+          );
 
           pythonSet =
             (pkgs.callPackage pyproject-nix.build.packages {
@@ -91,6 +98,20 @@ in
           };
         };
         expectedError.type = "AssertionError";
+      };
+
+      testConflictsIndexBoth = {
+        expr = mkTest ../lib/fixtures/conflicts-index {
+          packages = [ "conflicts-index" ];
+          dependencies = {
+            conflicts-index = [
+              "group-a"
+              "group-b"
+            ];
+          };
+        };
+        expectedError.type = "ThrownError";
+        expectedError.msg = "resolution still ambigious";
       };
     };
 

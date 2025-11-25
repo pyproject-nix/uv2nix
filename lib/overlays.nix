@@ -13,9 +13,47 @@ let
     attrValues
     mapAttrs
     any
-    optionalAttrs
+    concatMap
+    elem
+    stringLength
     ;
   inherit (pyproject-nix.lib) pep440 pep508;
+
+  # Compute synthetic conflict extras from the lock's conflicts and the dependency spec.
+  #
+  # UV uses synthetic markers like `extra == 'group-<len>-<package>-<group>'` in resolution-markers
+  # to distinguish packages from different conflict groups. When resolving dependencies, we need
+  # to include these synthetic extras in the environment so the markers evaluate correctly.
+  #
+  # The encoding format is defined in UV's source code:
+  # https://github.com/astral-sh/uv/blob/main/crates/uv-resolver/src/universal_marker.rs
+  #
+  # Specifically, the `encode_package_extra` and `encode_package_group` functions generate:
+  # - For extras: `extra-{package_len}-{package}-{extra}`
+  # - For groups: `group-{package_len}-{package}-{group}`
+  #
+  # Where `package_len` is the length of the package name in bytes, which ensures
+  # unambiguous parsing since `-` is valid in package/extra names.
+  computeConflictExtras =
+    let
+      packageLen = def: toString (stringLength def.package);
+    in
+    {
+      conflicts,
+      spec,
+    }:
+    concatMap (concatMap (
+      def:
+      # Not selected
+      if !(elem (def.extra or def.group or null) (spec.${def.package} or [ ])) then
+        [ ]
+      else if def ? group then
+        [ "group-${packageLen def}-${def.package}-${def.group}" ]
+      else if def ? extra then
+        [ "extra-${packageLen def}-${def.package}-${def.extra}" ]
+      else
+        [ ]
+    )) conflicts;
 
   mkOverlay' =
     {
@@ -31,14 +69,21 @@ let
     let
       inherit (final) callPackage;
 
+      # Compute synthetic extras for selected conflicts
+      conflictExtras = computeConflictExtras {
+        inherit (uvLock) conflicts;
+        inherit spec;
+      };
+
       # Note: Using Python from final here causes infinite recursion.
       # There is no correct way to override the python interpreter from within the set anyway,
       # so all facts that we get from the interpreter derivation are still the same.
       environ' = pep508.setEnviron (pep508.mkEnviron prev.python) (
         environ
-        // optionalAttrs (!environ ? extra) {
-          # Set a default empty list of extras so any marker evaluation that uses the extra field won't crash.
-          extra = [ ];
+        // {
+          # Include both user-provided extras and synthetic conflict extras
+          # so that resolution-markers with conflict extras evaluate correctly.
+          extra = (environ.extra or [ ]) ++ conflictExtras;
         }
       );
       pythonVersion = environ'.python_full_version.value;

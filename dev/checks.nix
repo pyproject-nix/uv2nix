@@ -256,6 +256,30 @@ let
         '';
       };
 
+      # Test for conflicts with resolution-markers containing synthetic extras
+      # This tests the fix for https://github.com/pyproject-nix/uv2nix/issues/265
+      conflictsIndexA = mkCheck {
+        name = "conflicts-index-group-a";
+        root = ../lib/fixtures/conflicts-index;
+        spec = {
+          conflicts-index = [ "group-a" ];
+        };
+        check = ''
+          python -c 'import arpeggio; assert arpeggio.__version__ == "2.0.0"'
+        '';
+      };
+
+      conflictsIndexB = mkCheck {
+        name = "conflicts-index-group-b";
+        root = ../lib/fixtures/conflicts-index;
+        spec = {
+          conflicts-index = [ "group-b" ];
+        };
+        check = ''
+          python -c 'import arpeggio; assert arpeggio.__version__ == "2.0.1"'
+        '';
+      };
+
       dynamicVersion = mkCheck {
         name = "dynamic-version";
         root = ../lib/fixtures/dynamic-version;
