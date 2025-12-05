@@ -358,6 +358,14 @@ in
         else
           throw "Unhandled state: could not derive src for package '${package.name}' from: ${toJSON source}";
 
+      subdirectory =
+        if (isGit && gitURL ? query.subdirectory) then
+          gitURL.query.subdirectory
+        else if isURL then
+          package.source.subdirectory or package.sdist.subdirectory or null
+        else
+          null;
+
     in
     # make sure there is no intersection between no-binary-packages and no-build-packages for current package
     assert assertMsg (!elem package.name unbuildable-packages) (
@@ -428,8 +436,8 @@ in
             darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion
           ));
       }
-      // optionalAttrs (isGit && gitURL ? query.subdirectory) {
-        sourceRoot = "source/${gitURL.query.subdirectory}";
+      // optionalAttrs (subdirectory != null) {
+        sourceRoot = "source/${subdirectory}";
       }
       // optionalAttrs stdenv.isDarwin {
         sandboxProfile = darwinSandboxProfile;
