@@ -375,6 +375,7 @@ in
     assert assertMsg (format == "wheel" -> !elem package.name no-binary-package)
       "Package source for '${package.name}' was derived as wheel, but was present in tool.uv.no-binary-package";
     stdenv.mkDerivation (
+      self:
       {
         pname = package.name;
         version = "0.0.0";
@@ -389,7 +390,7 @@ in
         };
 
         nativeBuildInputs =
-          optional (hasSuffix ".zip" (src.passthru.url or "")) unzip
+          optional (hasSuffix ".zip" (self.src.passthru.url or "")) unzip
           ++ optional (format == "pyproject") pyprojectHook
           ++ optional (format == "wheel") pyprojectWheelHook
           ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook;
