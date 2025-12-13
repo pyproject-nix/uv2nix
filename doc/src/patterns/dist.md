@@ -10,8 +10,8 @@ The intermediate wheel file is normally discarded once the build is complete and
 Using [multiple outputs](https://nixos.org/manual/nixpkgs/stable/#chap-multiple-output) allows us to not only perform our regular install steps, but also to install the wheel files into a separate output.
 To add a separate dist output:
 ```nix
-pythonSet.hello-world.override (old: {
-  outputs = [ "out" dist" ];
+pythonSet.hello-world.overrideAttrs (final: prev: {
+  outputs = [ "out" "dist" ];
 })
 ```
 This will install the produced wheel into the build output directory of the `dist` output, producing the same contents as a `uv build` would produce in `dist/`.
