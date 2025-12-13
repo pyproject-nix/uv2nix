@@ -11,7 +11,7 @@ Using [multiple outputs](https://nixos.org/manual/nixpkgs/stable/#chap-multiple-
 To add a separate dist output:
 ```nix
 pythonSet.hello-world.override (old: {
-  outputs = [ "out" dist" ];
+  outputs = [ "out" "dist" ];
 })
 ```
 This will install the produced wheel into the build output directory of the `dist` output, producing the same contents as a `uv build` would produce in `dist/`.
