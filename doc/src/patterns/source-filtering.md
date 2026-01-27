@@ -25,9 +25,10 @@ Another way to reduce the amount of rebuilds even further is to construct dummy 
 ```nix
   app = prev.app.overrideAttrs(old: {
     src = pkgs.runCommand "app-src" {} ''
-      cp ${./pyproject.toml} pyproject.toml
-      mkdir app
-      touch app/__init__.py
+      mkdir $out
+      cp ${./pyproject.toml} $out/pyproject.toml
+      mkdir $out/app
+      touch $out/app/__init__.py
     '';
   });
 ```
