@@ -249,7 +249,7 @@ fix (self: {
                 def:
                 let
                   extras' =
-                    spec.${def.package} or (throw "Package '${spec.package}' not present in resolution specification");
+                    spec.${def.package} or (throw "Package '${def.package}' not present in resolution specification");
                 in
                 elem (def.extra or def.group) extras'
               ) conflict;
