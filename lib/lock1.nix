@@ -531,7 +531,10 @@ fix (self: {
                   dependencies = throw ''
                     internal error: accessed dependencies from pyproject.nix project, not uv.lock
 
-                    Hint: Are you in a Flake and forgot to `git add pyproject.toml`?
+                    This error mostly happens in conjunction with Flakes when
+                    - File wasn't staged to Git (`git add pyproject.toml`)
+                    - Using Git submodules without passing `?submodules=1`
+                    - Referencing a project outside of the Flake root
                   '';
                   extras = dependencies;
                   groups = dependencies;
