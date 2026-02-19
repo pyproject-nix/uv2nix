@@ -4,7 +4,7 @@
     "members": []
   },
   "options": {
-    "exclude-newer": "2024-08-21T10:06:00Z",
+    "exclude-newer": null,
     "prerelease-mode": null,
     "resolution-mode": null
   },
@@ -20,9 +20,9 @@
         "pre": null,
         "release": [
           3,
-          12
+          11
         ],
-        "str": "3.12"
+        "str": "3.11"
       }
     }
   ],

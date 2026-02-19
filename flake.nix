@@ -189,6 +189,35 @@
                 touch $out
               '';
         }
+        // (
+          let
+            pkgs' = import ciFlake.inputs.nixpkgs-22_11 {
+              inherit system;
+              overlays = [
+                (_: _: {
+                  # The pyproject.nix test harness inherits sources from pythonPackages
+                  # and 22.11 versions fail to build for various reasons.
+                  inherit (pkgs) python3Packages;
+
+                  # Older uv versions lack important features, and 22.11 doesn't even contain uv.
+                  # Users of older channels need to pass a more recent uv.
+                  # Hint: Uv2nix provides a uv-bin package.
+                  inherit (pkgs) uv;
+                })
+              ];
+            };
+
+            checks' = import ./dev/checks.nix {
+              inherit pyproject-nix;
+              pkgs = pkgs';
+              inherit (pkgs') lib;
+              uv2nix = self.lib;
+            };
+          in
+          {
+            trivial-22_11 = checks'.trivial;
+          }
+        )
       );
 
       packages = forAllSystems (
