@@ -23,7 +23,8 @@ let
     sourcePreference:
     {
       root,
-      interpreter ? pkgs.python312,
+      # Older nixpkgs doesn't have 312, but 3.11 is fine for some smoke tests.
+      interpreter ? (pkgs.python312 or pkgs.python311),
       spec ? { },
       check ? null,
       name ? throw "No name provided",
