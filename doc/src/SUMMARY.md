@@ -29,6 +29,8 @@
 
 - [Conflicts support](./conflicts.md)
 
+- [Using uv2nix with older nixpkgs](./old-nixpkgs.md)
+
 # [Templates](./templates.md)
 - [Flake Templates](./templates.md)
 
