@@ -207,6 +207,7 @@ in
       config,
       workspaceRoot,
       defaultSourcePreference,
+      isBuildPackages ? false,
     }:
     let
       inherit (config)

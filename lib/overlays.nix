@@ -64,6 +64,7 @@ let
       environ,
       spec,
       localProjects,
+      isBuildPackages ? false,
     }:
     final: prev:
     let
@@ -98,7 +99,7 @@ let
       };
 
       buildRemotePackage = build.remote {
-        inherit workspaceRoot config;
+        inherit workspaceRoot config isBuildPackages;
         defaultSourcePreference = sourcePreference;
       };
 
@@ -169,8 +170,22 @@ in
           ;
         uvLock = lock;
       };
+
+      crossOverlay' = mkOverlay' {
+        inherit
+          sourcePreference
+          environ
+          spec
+          localProjects
+          config
+          workspaceRoot
+          ;
+        uvLock = lock;
+        isBuildPackages = true;
+      };
+
       crossOverlay = composeExtensions (_final: prev: {
-        pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope overlay;
+        pythonPkgsBuildHost = prev.pythonPkgsBuildHost.overrideScope crossOverlay';
         pythonPkgsHostHost = prev.pythonPkgsHostHost.overrideScope overlay;
       }) overlay;
     in
