@@ -24,7 +24,7 @@ let
     groupBy
     hasSuffix
     ;
-  inherit (pyproject-nix.build.lib) renderers;
+  inherit (pyproject-nix.build.lib) renderers pep508;
   inherit (pyproject-nix.lib) pypa;
   inherit (builtins)
     toJSON
@@ -111,6 +111,30 @@ let
         "]"
       ];
 
+  # Support code for extra-build-dependencies shared among both local & remote builds
+  mkPackageExtraBuildDependencies =
+    environ: deps:
+    if deps == [ ] then
+      { }
+    else
+      listToAttrs (
+        concatMap (
+          extra-dep:
+          let
+            req = extra-dep.requirement;
+          in
+          if (req.markers == null || pep508.evalMarkers environ req.markers) then
+            [
+              {
+                inherit (req) name;
+                value = req.extras;
+              }
+            ]
+          else
+            [ ]
+        ) deps
+      );
+
   # `uv pip install` requires precisely matching the expected wheel file names.
   # fetchurl doesn't un-escape the name, leaving percent encoding characters in the filename
   # resulting in install failures.
@@ -133,6 +157,7 @@ in
       localProject,
       environ,
       package,
+      config,
     }:
     {
       stdenv,
@@ -168,13 +193,22 @@ in
                 pyprojectEditableHook
                 resolveBuildSystem
                 ;
-
             };
+
+      package-extra-build-dependencies = mkPackageExtraBuildDependencies environ (
+        config.extra-build-dependencies.${package.name} or [ ]
+      );
 
     in
     stdenv.mkDerivation (
       attrs
       // {
+        nativeBuildInputs =
+          (attrs.nativeBuildInputs or [ ])
+          ++ optionals (package-extra-build-dependencies != [ ]) (
+            resolveBuildSystem package-extra-build-dependencies
+          );
+
         buildInputs =
           (attrs.buildInputs or [ ])
           ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
@@ -207,6 +241,7 @@ in
       config,
       workspaceRoot,
       defaultSourcePreference,
+      environ,
       isBuildPackages ? false,
     }:
     let
@@ -215,6 +250,7 @@ in
         no-build
         no-binary-package
         no-build-package
+        extra-build-dependencies
         ;
       unbuildable-packages = intersectLists no-binary-package no-build-package;
     in
@@ -240,6 +276,7 @@ in
       unzip,
       pyprojectHook,
       pyprojectWheelHook,
+      resolveBuildSystem,
       sourcePreference ? defaultSourcePreference,
       darwinMinVersionHook ? null,
     }:
@@ -367,6 +404,9 @@ in
         else
           null;
 
+      package-extra-build-dependencies = mkPackageExtraBuildDependencies environ (
+        extra-build-dependencies.${package.name} or [ ]
+      );
     in
     # make sure there is no intersection between no-binary-packages and no-build-packages for current package
     assert assertMsg (!elem package.name unbuildable-packages) (
@@ -402,7 +442,10 @@ in
           optional (hasSuffix ".zip" (self.src.passthru.url or "")) unzip
           ++ optional (format == "pyproject") pyprojectHook
           ++ optional (format == "wheel") pyprojectWheelHook
-          ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook;
+          ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook
+          ++ optionals (package-extra-build-dependencies != { }) (
+            resolveBuildSystem package-extra-build-dependencies
+          );
       }
       // optionalAttrs (package ? version) {
         # Take potentially dynamic fields from uv.lock package

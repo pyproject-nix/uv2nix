@@ -1,0 +1,20 @@
+[project]
+name = "with-extra-build-dependencies"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "adisbladis", email = "adisbladis@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+with-extra-build-dependencies = "with_extra_build_dependencies:main"
+
+[tool.uv]
+extra-build-dependencies = { with-extra-build-dependencies = ["setuptools"] }
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"

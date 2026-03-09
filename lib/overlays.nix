@@ -99,7 +99,12 @@ let
       };
 
       buildRemotePackage = build.remote {
-        inherit workspaceRoot config isBuildPackages;
+        inherit
+          workspaceRoot
+          config
+          isBuildPackages
+          ;
+        environ = environ';
         defaultSourcePreference = sourcePreference;
       };
 
@@ -121,7 +126,7 @@ let
         callPackage (build.local {
           environ = environ';
           localProject = localProjects.${name};
-          inherit package;
+          inherit config package;
         }) { }
       else
         callPackage (buildRemotePackage package) { }

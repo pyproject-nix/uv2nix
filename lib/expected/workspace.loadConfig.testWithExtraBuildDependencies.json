@@ -1,0 +1,19 @@
+{
+  "extra-build-dependencies": {
+    "with-extra-build-dependencies": [
+      {
+        "requirement": {
+          "conditions": [],
+          "extras": [],
+          "markers": null,
+          "name": "setuptools",
+          "url": null
+        }
+      }
+    ]
+  },
+  "no-binary": false,
+  "no-binary-package": [],
+  "no-build": false,
+  "no-build-package": []
+}

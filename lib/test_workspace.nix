@@ -7,7 +7,7 @@
 }:
 
 let
-  inherit (lib) nameValuePair;
+  inherit (lib) nameValuePair elemAt;
   inherit (import ./testutil.nix { inherit lib; }) capitalise;
 
   # Test fixture workspaces
@@ -20,6 +20,7 @@ let
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
     withLegacy = ./fixtures/workspace-with-legacy;
+    withExtraBuildDependencies = ./fixtures/with-extra-build-dependencies;
   };
 
 in
@@ -50,7 +51,7 @@ in
       name = "test${capitalise name'}";
       members = workspace.discoverWorkspace { workspaceRoot = root; };
       pyprojects = map (_m: lib.importTOML (root + "/pyproject.toml")) members;
-      config = workspace.loadConfig pyprojects;
+      config = workspace.loadConfig (elemAt pyprojects 0) pyprojects;
     in
     nameValuePair name {
       expr = config;

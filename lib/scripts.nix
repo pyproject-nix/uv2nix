@@ -78,7 +78,7 @@ in
         else
           throw "No sourcePreference was passed, and could not be automatically inferred from script";
 
-      loadedConfig = workspace.loadConfig [ script'.metadata.metadata ];
+      loadedConfig = workspace.loadConfig script'.metadata.metadata [ script'.metadata.metadata ];
       # Merge with overriden config
       config' = loadedConfig // (if isFunction config then config loadedConfig else config);
 
