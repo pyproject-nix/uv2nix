@@ -15,5 +15,5 @@
     nixpkgs-22_11.url = "github:nixos/nixpkgs/nixos-22.11";
   };
 
-  outputs = { ... }: { };
+  outputs = _: { };
 }

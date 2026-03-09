@@ -303,7 +303,9 @@ in
         else
           throw "Unknown sourcePreference: ${sourcePreference}";
 
-      compatibleWheels = pypa.selectWheels (if isBuildPackages then stdenv.buildPlatform else stdenv.targetPlatform) python wheelFiles;
+      compatibleWheels = pypa.selectWheels (
+        if isBuildPackages then stdenv.buildPlatform else stdenv.targetPlatform
+      ) python wheelFiles;
       selectedWheel' = head compatibleWheels;
       selectedWheel = wheels.${selectedWheel'.filename};
 

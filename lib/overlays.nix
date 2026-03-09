@@ -79,14 +79,17 @@ let
       # Note: Using Python from final here causes infinite recursion.
       # There is no correct way to override the python interpreter from within the set anyway,
       # so all facts that we get from the interpreter derivation are still the same.
-      environ' = pep508.setEnviron (pep508.mkEnviron (if isBuildPackages then prev.python.pythonOnBuildForHost else prev.python)) (
-        environ
-        // {
-          # Include both user-provided extras and synthetic conflict extras
-          # so that resolution-markers with conflict extras evaluate correctly.
-          extra = (environ.extra or [ ]) ++ conflictExtras;
-        }
-      );
+      environ' =
+        pep508.setEnviron
+          (pep508.mkEnviron (if isBuildPackages then prev.python.pythonOnBuildForHost else prev.python))
+          (
+            environ
+            // {
+              # Include both user-provided extras and synthetic conflict extras
+              # so that resolution-markers with conflict extras evaluate correctly.
+              extra = (environ.extra or [ ]) ++ conflictExtras;
+            }
+          );
       pythonVersion = environ'.python_full_version.value;
 
       resolved = lock1.resolveDependencies {
