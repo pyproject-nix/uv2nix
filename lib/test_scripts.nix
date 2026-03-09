@@ -29,6 +29,7 @@ in
         no-binary-package = [ ];
         no-build = false;
         no-build-package = [ ];
+        extra-build-dependencies = { };
       };
     };
 
@@ -39,6 +40,7 @@ in
         no-binary-package = [ ];
         no-build = false;
         no-build-package = [ ];
+        extra-build-dependencies = { };
       };
     };
   };

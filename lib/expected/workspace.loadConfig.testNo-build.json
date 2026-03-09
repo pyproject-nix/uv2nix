@@ -1,4 +1,5 @@
 {
+  "extra-build-dependencies": {},
   "no-binary": false,
   "no-binary-package": [],
   "no-build": true,

@@ -2,10 +2,14 @@
   lib,
   lock1,
   overlays,
+  pyproject-nix,
   ...
 }:
 
 let
+  inherit (builtins)
+    typeOf
+    ;
   inherit (lib)
     importTOML
     splitString
@@ -43,6 +47,7 @@ let
     ;
   inherit (lib.lists) commonPrefix;
   inherit (builtins) readDir hasContext;
+  inherit (pyproject-nix.lib) pep508;
 
   # Match str against a glob pattern
   globMatches =
@@ -113,7 +118,7 @@ fix (self: {
       };
 
       # Load supported tool.uv settings
-      loadedConfig = self.loadConfig (
+      loadedConfig = self.loadConfig pyproject (
         # Extract pyproject.toml from loaded projects
         (map (project: project.pyproject) (attrValues workspaceProjects))
         # If workspace root is a virtual root it wasn't discovered as a member directory
@@ -150,6 +155,7 @@ fix (self: {
       */
       inherit (uvLock) requires-python;
 
+      # inherit (uvLock) requires-python;
 
       /*
         Generate an overlay to use with pyproject.nix's build infrastructure.
@@ -273,8 +279,11 @@ fix (self: {
     - tool.uv.no-build
     - tool.uv.no-binary-package
     - tool.uv.no-build-package
+    - tool.uv.extra-build-dependencies
   */
   loadConfig =
+    # Workspace root pyproject.toml
+    pyproject:
     # List of imported (lib.importTOML) pyproject.toml files from workspace from which to load config
     pyprojects:
     let
@@ -317,6 +326,27 @@ fix (self: {
       no-build-package = unique (
         concatMap (pyproject: pyproject.tool.uv.no-build-package or [ ]) pyprojects
       );
+      extra-build-dependencies = mapAttrs (
+        _:
+        map (
+          req:
+          # an extra-build-dependencies entry can either be a string or a table with
+          # a `requirement` field and an optional `match-runtime` field.
+          #
+          # We normalise this parsing into the table form.
+          (
+            if isAttrs req then
+              req
+            else if isString req then
+              { }
+            else
+              throw "Unhandled type: ${typeOf req}"
+          )
+          // {
+            requirement = pep508.parseString req;
+          }
+        )
+      ) (pyproject.tool.uv.extra-build-dependencies or { });
     };
 
   /*

@@ -1,4 +1,5 @@
 {
+  "extra-build-dependencies": {},
   "no-binary": false,
   "no-binary-package": [
     "urllib3"
