@@ -199,9 +199,11 @@ in
         config.extra-build-dependencies.${package.name} or [ ]
       );
 
+      package-extra-build-variables = config.extra-build-variables.${package.name} or { };
     in
     stdenv.mkDerivation (
       attrs
+      // package-extra-build-variables
       // {
         nativeBuildInputs =
           (attrs.nativeBuildInputs or [ ])
@@ -409,6 +411,8 @@ in
       package-extra-build-dependencies = mkPackageExtraBuildDependencies environ (
         extra-build-dependencies.${package.name} or [ ]
       );
+
+      package-extra-build-variables = config.extra-build-variables.${package.name} or { };
     in
     # make sure there is no intersection between no-binary-packages and no-build-packages for current package
     assert assertMsg (!elem package.name unbuildable-packages) (
@@ -449,6 +453,7 @@ in
             resolveBuildSystem package-extra-build-dependencies
           );
       }
+      // package-extra-build-variables
       // optionalAttrs (package ? version) {
         # Take potentially dynamic fields from uv.lock package
         inherit (package) version;
