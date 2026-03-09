@@ -57,7 +57,9 @@ in
         let
           buildRemotePackage = build.remote {
             inherit workspaceRoot;
-            config = workspace.loadConfig projects.${projectName}.pyproject [ projects.${projectName}.pyproject ];
+            config = workspace.loadConfig projects.${projectName}.pyproject [
+              projects.${projectName}.pyproject
+            ];
             defaultSourcePreference = sourcePreference;
           };
         in

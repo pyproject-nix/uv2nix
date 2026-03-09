@@ -13,9 +13,9 @@ let
         }
       )
       (
-        filterAttrs (
-          name: type: type == "regular" && hasSuffix ".py" name
-        ) (readDir ./fixtures/inline-metadata)
+        filterAttrs (name: type: type == "regular" && hasSuffix ".py" name) (
+          readDir ./fixtures/inline-metadata
+        )
       );
 in
 
