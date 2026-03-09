@@ -30,6 +30,7 @@ in
         no-build = false;
         no-build-package = [ ];
         extra-build-dependencies = { };
+        extra-build-variables = { };
       };
     };
 
@@ -41,6 +42,7 @@ in
         no-build = false;
         no-build-package = [ ];
         extra-build-dependencies = { };
+        extra-build-variables = { };
       };
     };
   };

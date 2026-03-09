@@ -213,6 +213,38 @@ let
           '';
         });
 
+      withExtraBuildVariables =
+        let
+          root = ../lib/fixtures/with-extra-build-variables;
+          ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
+
+          overlay = ws.mkPyprojectOverlay {
+            inherit sourcePreference;
+          };
+
+          interpreter = pkgs.python312 or pkgs.python311;
+
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = interpreter;
+            }).overrideScope
+              (
+                lib.composeManyExtensions [
+                  buildSystems
+                  overlay
+                  buildSystemOverrides
+                  patchingDeps
+                ]
+              );
+
+        in
+        # Test that package is available for importing through the expected env var
+        pythonSet.with-extra-build-variables.overrideAttrs (old: {
+          preBuild = (old.preBuild or "") + ''
+            test "$FOO" = "BAR"
+          '';
+        });
+
       testMultiChoicePackageNoMarker = mkCheck {
         name = "multi-choice-no-marker";
         root = ../lib/fixtures/multi-choice-package;

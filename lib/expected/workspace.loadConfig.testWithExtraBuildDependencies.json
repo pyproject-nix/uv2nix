@@ -12,6 +12,7 @@
       }
     ]
   },
+  "extra-build-variables": {},
   "no-binary": false,
   "no-binary-package": [],
   "no-build": false,

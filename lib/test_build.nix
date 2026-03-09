@@ -61,6 +61,7 @@ in
               projects.${projectName}.pyproject
             ];
             defaultSourcePreference = sourcePreference;
+            environ = null;
           };
         in
         depName:

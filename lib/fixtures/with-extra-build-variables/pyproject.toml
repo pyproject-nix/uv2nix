@@ -1,0 +1,20 @@
+[project]
+name = "with-extra-build-variables"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "adisbladis", email = "adisbladis@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+with-extra-build-variables = "with_extra_build_variables:main"
+
+[tool.uv]
+extra-build-variables = { with-extra-build-variables = { FOO = "BAR" } }
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
