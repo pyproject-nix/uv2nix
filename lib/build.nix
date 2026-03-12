@@ -203,6 +203,9 @@ in
     in
     stdenv.mkDerivation (
       attrs
+      // optionalAttrs (!config.compile-bytecode) {
+        UV_COMPILE_BYTECODE = "0";
+      }
       // package-extra-build-variables
       // {
         nativeBuildInputs =
@@ -248,6 +251,7 @@ in
     }:
     let
       inherit (config)
+        compile-bytecode
         no-binary
         no-build
         no-binary-package
@@ -433,9 +437,11 @@ in
       self:
       {
         pname = package.name;
-        version = "0.0.0";
+        version = package.version or "0.0.0";
 
         inherit src;
+
+        ${if !compile-bytecode then "UV_COMPILE_BYTECODE" else null} = "0";
 
         passthru = {
           dependencies = mkSpec package.dependencies;
@@ -454,10 +460,6 @@ in
           );
       }
       // package-extra-build-variables
-      // optionalAttrs (package ? version) {
-        # Take potentially dynamic fields from uv.lock package
-        inherit (package) version;
-      }
       // optionalAttrs (format == "wheel") {
         # Don't strip prebuilt wheels
         dontStrip = true;

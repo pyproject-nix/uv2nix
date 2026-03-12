@@ -1,4 +1,5 @@
 {
+  "compile-bytecode": true,
   "extra-build-dependencies": {
     "with-extra-build-dependencies": [
       {

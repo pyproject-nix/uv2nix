@@ -1,4 +1,5 @@
 {
+  "compile-bytecode": true,
   "extra-build-dependencies": {},
   "extra-build-variables": {},
   "no-binary": true,

@@ -523,6 +523,53 @@ in
 mkChecks "wheel"
 // mkChecks "sdist"
 // (lib.optionalAttrs (!stdenv.isDarwin) {
+  no-compile-bytecode =
+    let
+      interpreter = pkgs.python3;
+
+      mkBytecodeCheck =
+        { root, spec }:
+        let
+          ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
+
+          overlay = ws.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+          };
+
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = interpreter;
+            }).overrideScope
+              (
+                lib.composeManyExtensions [
+                  buildSystems
+                  overlay
+                  buildSystemOverrides
+                  patchingDeps
+                ]
+              );
+        in
+        pythonSet.mkVirtualEnv "no-compile-bytecode-venv" spec;
+
+      checkNoCompile = mkBytecodeCheck {
+        root = ../lib/fixtures/no-compile-bytecode;
+        spec = {
+          no-compile-bytecode = [ ];
+        };
+      };
+
+      checkCompile = mkBytecodeCheck {
+        root = ../lib/fixtures/trivial;
+        spec = {
+          trivial = [ ];
+        };
+      };
+    in
+    pkgs.runCommand "no-compile-bytecode-check" { } ''
+      ! test -e ${checkNoCompile}/${interpreter.sitePackages}/no_compile_bytecode/__pycache__
+      test -e ${checkCompile}/${interpreter.sitePackages}/trivial/__pycache__
+      mkdir $out
+    '';
 
   cross =
     let

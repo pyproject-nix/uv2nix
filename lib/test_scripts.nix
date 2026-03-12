@@ -25,6 +25,7 @@ in
     testTrivial = {
       expr = scripts'."trivial.py".config;
       expected = {
+        compile-bytecode = true;
         no-binary = false;
         no-binary-package = [ ];
         no-build = false;
@@ -37,6 +38,7 @@ in
     testConfig = {
       expr = scripts'."config.py".config;
       expected = {
+        compile-bytecode = true;
         no-binary = true;
         no-binary-package = [ ];
         no-build = false;

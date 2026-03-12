@@ -275,6 +275,7 @@ fix (self: {
     Load supported configuration from workspace
 
     Supports:
+    - tool.uv.compile-bytecode
     - tool.uv.no-binary
     - tool.uv.no-build
     - tool.uv.no-binary-package
@@ -319,6 +320,7 @@ fix (self: {
       ) null pyprojects;
     in
     {
+      compile-bytecode = pyproject.tool.uv.compile-bytecode or true;
       no-build = if no-build' != null then no-build' else false;
       no-binary = if no-binary' != null then no-binary' else false;
       no-binary-package = unique (
