@@ -214,8 +214,9 @@
               uv2nix = self.lib;
             };
           in
-          {
-            trivial-22_11 = checks'.trivial;
+          lib.optionalAttrs (!pkgs'.stdenv.isDarwin) {
+            # Fails on aarch64-darwin with oom
+            trivial-22_11 = builtins.trace system checks'.trivial;
           }
         )
       );
