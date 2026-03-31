@@ -78,6 +78,13 @@ Will recursively discover, load & parse all necessary member projects in a uv wo
 
 Uv2nix treats every project as a workspace project, even if it only contains a single `pyproject.toml` with a single project.
 
+> [!NOTE]
+> Filtering sources on the workspace root level technically works, but is incorrect and causes issues with editable packages.
+> This also results in [import-from-derivation](https://nix.dev/manual/nix/latest/language/import-from-derivation).
+>
+> See docs on [source filtering](../patterns/source-filtering.md) for how to correctly filter sources.
+
+
 ### Creating a uv2nix generated overlay
 
 Takes `uv.lock` & creates an overlay for use with `pyproject.nix` builders.
