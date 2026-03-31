@@ -26,6 +26,36 @@ app = prev.app.overrideAttrs (old: {
 })
 ```
 
+Source filtering is applied on the per-package level by applying an overlay:
+```nix
+let
+  overlay = workspace.mkPyprojectOverlay {
+    sourcePreference = "wheel";
+  };
+
+  editableOverlay = workspace.mkEditablePyprojectOverlay {
+    root = "$REPO_ROOT";
+  };
+
+  pyprojectOverrides = final: prev: {
+    app = prev.app.overrideAttrs (old: {
+      src = builtins.filterSource (_: _: true) old.src;
+    });
+  };
+
+  pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
+    inherit python;
+  }).overrideScope
+    (
+      lib.composeManyExtensions [
+        pyproject-build-systems.overlays.wheel
+        overlay
+      ]
+    );
+in
+  ...
+```
+
 ## Editable packages
 
 Source selection/filtering is extra important for editable packages, which should ideally only be rebuilt when project metadata changes.
