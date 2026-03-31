@@ -50,6 +50,7 @@ let
       lib.composeManyExtensions [
         pyproject-build-systems.overlays.wheel
         overlay
+        pyprojectOverrides
       ]
     );
 in
