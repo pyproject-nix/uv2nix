@@ -99,6 +99,12 @@ fix (self: {
       # - An attribute set
       # - A function taking the generated config as an argument, and returning the augmented config
       config ? { },
+      # Contents of the workspace's `uv.lock` file.
+      # Will default to `lib.importTOML "${workspaceRoot}/uv.lock"` if not set.
+      uvLock ? importTOML (workspaceRoot + "/uv.lock"),
+      # Contents of the workspace's `pyproject.toml` file.
+      # Will default to `lib.importTOML "${workspaceRoot}/pyproject.toml"` if not set.
+      pyproject ? importTOML (workspaceRoot + "/pyproject.toml"),
     }:
     assert (
       isPath workspaceRoot
@@ -107,13 +113,11 @@ fix (self: {
     );
     assert isAttrs config || isFunction config;
     let
-      pyproject = importTOML (workspaceRoot + "/pyproject.toml");
-      uvLock = lock1.parseLock (importTOML (workspaceRoot + "/uv.lock"));
-
-      localPackages = filter lock1.isLocalPackage uvLock.package;
+      parsedUvLock = lock1.parseLock uvLock;
+      localPackages = filter lock1.isLocalPackage parsedUvLock.package;
 
       workspaceProjects = lock1.getLocalProjects {
-        lock = uvLock;
+        lock = parsedUvLock;
         inherit localPackages workspaceRoot;
       };
 
@@ -153,7 +157,7 @@ fix (self: {
         Python constraints for project
         .
       */
-      inherit (uvLock) requires-python;
+      inherit (parsedUvLock) requires-python;
 
       # inherit (uvLock) requires-python;
 
@@ -181,7 +185,7 @@ fix (self: {
           inherit sourcePreference environ workspaceRoot;
           localProjects = workspaceProjects;
           spec = dependencies;
-          lock = uvLock;
+          lock = parsedUvLock;
           config = config';
         };
 
