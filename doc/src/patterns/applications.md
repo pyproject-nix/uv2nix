@@ -31,3 +31,24 @@ For such cases `pyproject.nix` provides a utility function [`mkApplication`](htt
       };
 }
 ```
+
+## Additional data
+
+When shipping an application you might want to ship additional data such as shell completions.
+
+To ship additional data in the same derivation as the application derivation use an override:
+
+```nix
+(mkApplication {
+  venv = pythonSet.mkVirtualEnv "application-env" workspace.deps.default;
+  package = pythonSet.hello-world;
+}).overrideAttrs(old: {
+  nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.installShellFiles ];
+  postInstall = ''
+    installShellCompletion --cmd ${cmd} \
+      --bash <($out/bin/${cmd} --show-completion bash) \
+      --fish <($out/bin/${cmd} --show-completion fish) \
+      --zsh <($out/bin/${cmd} --show-completion zsh)
+  '';
+})
+```
