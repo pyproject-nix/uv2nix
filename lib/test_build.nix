@@ -46,6 +46,56 @@ in
   remote =
     let
 
+      mkGitPackage =
+        {
+          source,
+          config ? { },
+        }:
+        let
+          buildRemotePackage =
+            build.remote
+              {
+                workspaceRoot = ./.;
+                config = {
+                  compile-bytecode = true;
+                  no-binary = false;
+                  no-build = false;
+                  no-binary-package = [ ];
+                  no-build-package = [ ];
+                  extra-build-dependencies = { };
+                }
+                // config;
+                defaultSourcePreference = "sdist";
+                environ = null;
+              }
+              {
+                name = "git-package";
+                version = "1.0.0";
+                inherit source;
+                dependencies = [ ];
+                optional-dependencies = { };
+                dev-dependencies = { };
+                sdist = { };
+                wheels = [ ];
+              };
+        in
+        pkgs.callPackage buildRemotePackage {
+          pyprojectHook = null;
+          pyprojectWheelHook = null;
+          python = pkgs.python312;
+          resolveBuildSystem = null;
+          fetchGit = args: {
+            fetcher = "fetchGit";
+            inherit args;
+            outPath = "/fetchGit";
+          };
+          fetchTree = args: {
+            fetcher = "fetchTree";
+            inherit args;
+            outPath = "/fetchTree";
+          };
+        };
+
       # Return a callPackage'd package.
       mkPackageTest =
         {
@@ -193,6 +243,161 @@ in
             ).src.url;
         expectedError.type = "ThrownError";
         expectedError.msg = "Package source for 'arpeggio' was derived as sdist, in tool.uv.no-binary is set to true";
+      };
+
+      testGitSourceDefaultsToFetchGit = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://github.com/pypa/pip.git?tag=20.3.1#f94a429e17b450ac2d3432f46492416ac2cf58ad";
+              };
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) url;
+            inherit (drv.src.args) ref;
+            inherit (drv.src.args) rev;
+          };
+        expected = {
+          fetcher = "fetchGit";
+          url = "https://github.com/pypa/pip.git";
+          ref = "refs/tags/20.3.1";
+          rev = "f94a429e17b450ac2d3432f46492416ac2cf58ad";
+        };
+      };
+
+      testGitHubSourceUsesFetchTreeInAutoMode = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://github.com/pypa/pip.git?tag=20.3.1#f94a429e17b450ac2d3432f46492416ac2cf58ad";
+              };
+              config.git-fetcher = "auto";
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) type;
+            inherit (drv.src.args) owner;
+            inherit (drv.src.args) repo;
+            inherit (drv.src.args) rev;
+          };
+        expected = {
+          fetcher = "fetchTree";
+          type = "github";
+          owner = "pypa";
+          repo = "pip";
+          rev = "f94a429e17b450ac2d3432f46492416ac2cf58ad";
+        };
+      };
+
+      testGitLabCustomHostUsesFetchTreeInAutoMode = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://gitlab.example.com/company/platform/internal-package.git#0123456789abcdef0123456789abcdef01234567";
+              };
+              config = {
+                git-fetcher = "auto";
+                git-forge-hosts."gitlab.example.com" = "gitlab";
+              };
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) type;
+            inherit (drv.src.args) owner;
+            inherit (drv.src.args) repo;
+            inherit (drv.src.args) host;
+          };
+        expected = {
+          fetcher = "fetchTree";
+          type = "gitlab";
+          owner = "company%2Fplatform";
+          repo = "internal-package";
+          host = "gitlab.example.com";
+        };
+      };
+
+      testCustomHostConfigPreservesBuiltInHosts = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://github.com/pypa/pip.git?tag=20.3.1#f94a429e17b450ac2d3432f46492416ac2cf58ad";
+              };
+              config = {
+                git-fetcher = "auto";
+                git-forge-hosts."gitlab.example.com" = "gitlab";
+              };
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) type;
+            inherit (drv.src.args) owner;
+            inherit (drv.src.args) repo;
+            inherit (drv.src.args) rev;
+          };
+        expected = {
+          fetcher = "fetchTree";
+          type = "github";
+          owner = "pypa";
+          repo = "pip";
+          rev = "f94a429e17b450ac2d3432f46492416ac2cf58ad";
+        };
+      };
+
+      testForceGitOverrideWinsInAutoMode = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://github.com/pypa/pip.git?tag=20.3.1#f94a429e17b450ac2d3432f46492416ac2cf58ad";
+              };
+              config = {
+                git-fetcher = "auto";
+                git-fetcher-force-git = [ "github.com/pypa/pip" ];
+              };
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) url;
+            inherit (drv.src.args) ref;
+            inherit (drv.src.args) rev;
+          };
+        expected = {
+          fetcher = "fetchGit";
+          url = "https://github.com/pypa/pip.git";
+          ref = "refs/tags/20.3.1";
+          rev = "f94a429e17b450ac2d3432f46492416ac2cf58ad";
+        };
+      };
+
+      testUnknownGitHostFallsBackToFetchGit = {
+        expr =
+          let
+            drv = mkGitPackage {
+              source = {
+                git = "https://git.example.com/company/internal-package.git#0123456789abcdef0123456789abcdef01234567";
+              };
+            };
+          in
+          {
+            inherit (drv.src) fetcher;
+            inherit (drv.src.args) url;
+            inherit (drv.src.args) rev;
+          };
+        expected = {
+          fetcher = "fetchGit";
+          url = "https://git.example.com/company/internal-package.git";
+          rev = "0123456789abcdef0123456789abcdef01234567";
+        };
       };
     };
 

@@ -20,6 +20,7 @@ let
 in
 
 fix (self: {
+  fetchers = callTest ./test_fetchers.nix;
   lock1 = callTest ./test_lock1.nix;
   workspace = callTest ./test_workspace.nix;
   build = callTest ./test_build.nix;

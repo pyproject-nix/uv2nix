@@ -1,4 +1,9 @@
-{ lib, pyproject-nix, ... }:
+{
+  lib,
+  fetchers,
+  pyproject-nix,
+  ...
+}:
 
 let
   inherit (lib)
@@ -8,13 +13,9 @@ let
     elem
     concatMap
     assertMsg
-    match
-    elemAt
     listToAttrs
-    splitString
     nameValuePair
     optionalAttrs
-    versionAtLeast
     findFirst
     optionals
     optional
@@ -28,88 +29,16 @@ let
   inherit (pyproject-nix.lib) pypa;
   inherit (builtins)
     toJSON
-    nixVersion
-    replaceStrings
     baseNameOf
     ;
 
-  parseGitURL =
-    url:
-    let
-      # With query params
-      m1 = match "([^?]+)\\?([^#]+)#(.+)" url;
-
-      # No query params
-      m2 = match "([^#]+)#(.+)" url;
-    in
-    if m1 != null then
-      {
-        url = elemAt m1 0;
-        query = listToAttrs (
-          map (
-            s:
-            let
-              parts = splitString "=" s;
-            in
-            assert length parts == 2;
-            nameValuePair (unquoteURL (elemAt parts 0)) (unquoteURL (elemAt parts 1))
-          ) (splitString "&" (elemAt m1 1))
-        );
-        fragment = unquoteURL (elemAt m1 2);
-      }
-    else if m2 != null then
-      {
-        url = elemAt m2 0;
-        query = { };
-        fragment = unquoteURL (elemAt m2 1);
-      }
-    else
-      throw "Could not parse git url: ${url}";
+  inherit (fetchers)
+    parseGitSource
+    selectGitFetcher
+    unquoteURL
+    ;
 
   mkSpec = dependencies: listToAttrs (map (dep: nameValuePair dep.name dep.extra) dependencies);
-
-  unquoteURL =
-    replaceStrings
-      [
-        "%21"
-        "%23"
-        "%24"
-        "%26"
-        "%27"
-        "%28"
-        "%29"
-        "%2A"
-        "%2B"
-        "%2C"
-        "%2F"
-        "%3A"
-        "%3B"
-        "%3D"
-        "%3F"
-        "%40"
-        "%5B"
-        "%5D"
-      ]
-      [
-        "!"
-        "#"
-        "$"
-        "&"
-        "'"
-        "("
-        ")"
-        "*"
-        "+"
-        ","
-        "/"
-        ":"
-        ";"
-        "="
-        "?"
-        "@"
-        "["
-        "]"
-      ];
 
   # Support code for extra-build-dependencies shared among both local & remote builds
   mkPackageExtraBuildDependencies =
@@ -277,6 +206,8 @@ in
       stdenv,
       python,
       fetchurl,
+      fetchGit ? builtins.fetchGit,
+      fetchTree ? builtins.fetchTree or null,
       autoPatchelfHook,
       pythonManylinuxPackages,
       unzip,
@@ -341,21 +272,25 @@ in
         else
           "pyproject";
 
-      gitURL = parseGitURL source.git;
+      gitSource = parseGitSource source.git;
 
       src =
         if isGit then
-          (fetchGit (
-            {
-              inherit (gitURL) url;
-              rev = gitURL.fragment;
+          let
+            parsedGitFetcher = selectGitFetcher {
+              inherit config;
+              hasFetchTree = fetchTree != null;
+            } gitSource;
+          in
+          if parsedGitFetcher.fetcher == "fetchTree" then
+            (fetchTree parsedGitFetcher.args)
+            // {
+              passthru = {
+                inherit (gitSource) url;
+              };
             }
-            // optionalAttrs (gitURL ? query.tag) { ref = "refs/tags/${gitURL.query.tag}"; }
-            // optionalAttrs (versionAtLeast nixVersion "2.4") {
-              allRefs = true;
-              submodules = true;
-            }
-          ))
+          else
+            fetchGit parsedGitFetcher.args
         else if isPath then
           {
             outPath = "${workspaceRoot + "/${source.path}"}";
@@ -405,8 +340,8 @@ in
           throw "Unhandled state: could not derive src for package '${package.name}' from: ${toJSON source}";
 
       subdirectory =
-        if (isGit && gitURL ? query.subdirectory) then
-          gitURL.query.subdirectory
+        if (isGit && gitSource ? query.subdirectory) then
+          gitSource.query.subdirectory
         else if isURL then
           package.source.subdirectory or package.sdist.subdirectory or null
         else
