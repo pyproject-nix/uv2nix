@@ -16,6 +16,7 @@ let
     concatMap
     elem
     stringLength
+    optionalAttrs
     ;
   inherit (pyproject-nix.lib) pep440 pep508;
 
@@ -64,6 +65,7 @@ let
       environ,
       spec,
       localProjects,
+      pythonVersionOverride ? null,
       isBuildPackages ? false,
     }:
     final: prev:
@@ -88,6 +90,15 @@ let
               # Include both user-provided extras and synthetic conflict extras
               # so that resolution-markers with conflict extras evaluate correctly.
               extra = (environ.extra or [ ]) ++ conflictExtras;
+            }
+            # When the interpreter's patch version doesn't match requires-python
+            # (e.g. when using pkgs.python3X from nixpkgs), allow overriding the
+            # Python version. This keeps the requires-python assertion meaningful
+            # and ensures dependency resolution & PEP-508 marker evaluation use a
+            # consistent version.
+            // optionalAttrs (pythonVersionOverride != null) {
+              python_full_version = pythonVersionOverride;
+              python_version = pythonVersionOverride;
             }
           );
       pythonVersion = environ'.python_full_version.value;
@@ -165,6 +176,11 @@ in
       workspaceRoot,
       # Lock parsed by lock1.parseLock
       lock,
+      # Override the Python version used for the requires-python assertion,
+      # dependency resolution & PEP-508 marker evaluation.
+      # Useful when the interpreter's patch version (e.g. pkgs.python3X) doesn't
+      # match the version constraint declared in requires-python.
+      pythonVersion ? null,
     }:
     let
       overlay = mkOverlay' {
@@ -177,6 +193,7 @@ in
           workspaceRoot
           ;
         uvLock = lock;
+        pythonVersionOverride = pythonVersion;
       };
 
       crossOverlay' = mkOverlay' {
@@ -189,6 +206,7 @@ in
           workspaceRoot
           ;
         uvLock = lock;
+        pythonVersionOverride = pythonVersion;
         isBuildPackages = true;
       };
 

@@ -180,9 +180,19 @@ fix (self: {
           # Dependency specification used for conflict resolution.
           # By default mkPyprojectOverlay resolves the entire workspace, but that will not work for resolutions with conflicts.
           dependencies ? deps.all,
+          # Override the Python version used for the requires-python assertion,
+          # dependency resolution & PEP-508 marker evaluation.
+          # Useful when the interpreter's patch version (e.g. pkgs.python3X) doesn't
+          # match the version constraint declared in requires-python.
+          pythonVersion ? null,
         }:
         overlays.mkOverlay {
-          inherit sourcePreference environ workspaceRoot;
+          inherit
+            sourcePreference
+            environ
+            workspaceRoot
+            pythonVersion
+            ;
           localProjects = workspaceProjects;
           spec = dependencies;
           lock = parsedUvLock;

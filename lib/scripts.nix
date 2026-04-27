@@ -113,6 +113,11 @@ in
           sourcePreference ? defaultSourcePreference,
           environ ? { },
           workspaceRoot ? throw "No workspaceRoot provided",
+          # Override the Python version used for the requires-python assertion,
+          # dependency resolution & PEP-508 marker evaluation.
+          # Useful when the interpreter's patch version (e.g. pkgs.python3X) doesn't
+          # match the version constraint declared in requires-python.
+          pythonVersion ? null,
         }:
         overlays.mkOverlay {
           inherit
@@ -120,6 +125,7 @@ in
             environ
             workspaceRoot
             localProjects
+            pythonVersion
             ;
           lock = uvLock;
           config = config';
