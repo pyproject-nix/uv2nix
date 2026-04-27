@@ -355,6 +355,7 @@ fix (self: {
         )
       ) (pyproject.tool.uv.extra-build-dependencies or { });
       extra-build-variables = pyproject.tool.uv.extra-build-variables or { };
+      no-check-python-version = false;
     };
 
   /*

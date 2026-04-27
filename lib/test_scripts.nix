@@ -30,6 +30,7 @@ in
         no-binary-package = [ ];
         no-build = false;
         no-build-package = [ ];
+        no-check-python-version = false;
         extra-build-dependencies = { };
         extra-build-variables = { };
       };
@@ -43,6 +44,7 @@ in
         no-binary-package = [ ];
         no-build = false;
         no-build-package = [ ];
+        no-check-python-version = false;
         extra-build-dependencies = { };
         extra-build-variables = { };
       };
