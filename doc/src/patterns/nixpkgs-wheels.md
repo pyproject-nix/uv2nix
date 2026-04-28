@@ -24,14 +24,11 @@ let
 in
 mkShell {
   packages = [ pkgs.uv python ];
-  shellHook = ''
-    ln -sfn ${uv-links} .uv-links
-    export UV_FIND_LINKS=$(realpath -s .uv-links)
-  '';
+  env.UV_FIND_LINKS = uv-links;
 }
 ```
 
-To be able to read the sources from a Flake evaluation you will also have to override the `seccomp` package sources, as `.uv-links` is not added to Git.
+To be able to read the sources from a Flake evaluation you will also have to override the `seccomp` package sources:
 
 ``` nix
 let
