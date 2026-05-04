@@ -24,7 +24,8 @@ let
     groupBy
     hasSuffix
     ;
-  inherit (pyproject-nix.build.lib) renderers pep508;
+  inherit (pyproject-nix.build.lib) renderers;
+  inherit (pyproject-nix.lib) pep508;
   inherit (pyproject-nix.lib) pypa;
   inherit (builtins)
     toJSON
