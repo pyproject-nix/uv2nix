@@ -9,5 +9,6 @@
   "no-build": false,
   "no-build-package": [
     "arpeggio"
-  ]
+  ],
+  "no-check-python-version": false
 }
