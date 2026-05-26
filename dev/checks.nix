@@ -361,6 +361,14 @@ let
         };
       };
 
+      urlSubdirectory = mkCheck {
+        name = "url-subdirectory";
+        root = ../lib/fixtures/url-subdirectory;
+        spec = {
+          url-subdirectory = [ ];
+        };
+      };
+
       editable-workspace =
         let
           workspaceRoot = ../lib/fixtures/workspace;
