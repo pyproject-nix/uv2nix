@@ -492,7 +492,9 @@ in
           ));
       }
       // optionalAttrs (subdirectory != null) {
-        sourceRoot = "source/${subdirectory}";
+        postUnpack = ''
+          sourceRoot="$sourceRoot/${subdirectory}"
+        '';
       }
       // optionalAttrs stdenv.isDarwin {
         sandboxProfile = darwinSandboxProfile;
