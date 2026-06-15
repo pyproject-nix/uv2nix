@@ -1,0 +1,30 @@
+[project]
+name = "dependency-group-conflicts"
+version = "0.1.0"
+description = "Testing conflicts in dependency groups"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+# Dependency groups are rendered in uv.lock as package.dev-dependencies
+[dependency-groups]
+group-a = ["urllib3"]
+group-b = ["arpeggio"]
+group-c = ["tqdm"]
+
+[tool.uv]
+default-groups = [ "group-a" ]
+conflicts = [
+    [
+      { group = "group-a" },
+      { group = "group-b" },
+    ],
+    [
+      { group = "group-a" },
+      { group = "group-c" },
+    ],
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -81,9 +81,21 @@ let
     sourcePreference:
     let
       mkCheck = mkCheck' sourcePreference;
+      # True iff evaluating the check aborts (e.g. an unresolvable conflict spec).
+      mkFail = args: !(builtins.tryEval (builtins.seq (mkCheck args).drvPath null)).success;
       nameSuffix = if sourcePreference == "wheel" then "" else "-pref-${sourcePreference}";
 
     in
+    # Selecting two mutually conflicting dependency groups must abort evaluation.
+    assert mkFail {
+      root = ../lib/fixtures/dependency-group-conflicts;
+      spec = {
+        dependency-group-conflicts = [
+          "group-a"
+          "group-b"
+        ];
+      };
+    };
     mapAttrs' (name: v: nameValuePair "${name}${nameSuffix}" v) {
       trivial = mkCheck {
         root = ../lib/fixtures/trivial;
@@ -145,10 +157,86 @@ let
       };
 
       dependencyGroups = mkCheck {
+        name = "dependency-groups";
         root = ../lib/fixtures/dependency-groups;
         spec = {
           dependency-groups = [ "group-a" ];
         };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      dependencyGroupNoSelect = mkCheck {
+        name = "dependency-groups-noselect";
+        root = ../lib/fixtures/dependency-groups;
+        spec = {
+          dependency-groups = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+        '';
+      };
+
+      # A workspace that declares conflicting dependency groups must still build
+      # when none of the conflicting groups is selected.
+      dependencyGroupConflictsNone = mkCheck {
+        name = "dependency-group-conflicts-none";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsA = mkCheck {
+        name = "dependency-group-conflicts-a";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-a" ];
+        };
+        check = ''
+          python -c 'import urllib3'
+          python -c 'import arpeggio' && exit 1
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      # group-a also appears in the group-a/group-c conflict; selecting only
+      # group-b must not trip over that other, unselected declaration.
+      dependencyGroupConflictsB = mkCheck {
+        name = "dependency-group-conflicts-b";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [ "group-b" ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+          python -c 'import tqdm' && exit 1
+        '';
+      };
+
+      dependencyGroupConflictsBC = mkCheck {
+        name = "dependency-group-conflicts-bc";
+        root = ../lib/fixtures/dependency-group-conflicts;
+        spec = {
+          dependency-group-conflicts = [
+            "group-b"
+            "group-c"
+          ];
+        };
+        check = ''
+          python -c 'import urllib3' && exit 1
+          python -c 'import arpeggio'
+          python -c 'import tqdm'
+        '';
       };
 
       optionalDeps = mkCheck {
@@ -251,9 +339,11 @@ let
         spec = {
           multi-choice-package = [ ];
         };
-        # Check that arpeggio _isn't_ available
+        # Check that arpeggio _isn't_ available.
+        # A leading `!` is exempt from the sandbox's errexit, so a regression
+        # would silently pass; use `&& exit 1` to fail the build instead.
         check = ''
-          ! python -c "import arpeggio"
+          python -c "import arpeggio" && exit 1
         '';
       };
 
@@ -574,7 +664,7 @@ mkChecks "wheel"
       };
     in
     pkgs.runCommand "no-compile-bytecode-check" { } ''
-      ! test -e ${checkNoCompile}/${interpreter.sitePackages}/no_compile_bytecode/__pycache__
+      test ! -e ${checkNoCompile}/${interpreter.sitePackages}/no_compile_bytecode/__pycache__
       test -e ${checkCompile}/${interpreter.sitePackages}/trivial/__pycache__
       mkdir $out
     '';

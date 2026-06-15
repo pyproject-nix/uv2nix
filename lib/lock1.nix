@@ -63,34 +63,37 @@ fix (self: {
       resolution-markers = mapAttrs (_: evalMarkers environ) lock.resolution-markers;
 
       # Filter dependencies of packages
-      packages = map (
-        pkg:
-        # Attach a precomputed key (pname + version).
-        #
-        # This key is used both to group candidates and as the genericClosure key below.
-        # Computing it once per package avoids re-interpolating the same string for
-        # every incoming dependency edge.
-        (self.filterPackage environ pkg) // { _key = "${pkg.name}-${pkg.version}"; }
-      ) (
-        # Filter packages based on resolution-markers
-        filter (
-          pkg:
-          length pkg.resolution-markers == 0
-          || any (
-            markers:
-            resolution-markers.${markers} or (
-              # Uv has a bug introduced in https://github.com/astral-sh/uv/pull/11513
-              # Where internal conflict markers aren't correctly stripped.
-              #
-              # This makes it impossible to correctly consume a lock with conflict markers.
-              # I'm hoping that this will eventually get fixed, but in the mean time this means that:
-              # 1. We can only really evaluate conflict markers on a best effort basis.
-              # 2. Degraded performance because we can no longer rely on the top-level markers as a cache lookup.
-              evalMarkers environ (parseMarkers markers)
-            )
-          ) pkg.resolution-markers
-        ) lock.package
-      );
+      packages =
+        map
+          (
+            pkg:
+            # Attach a precomputed key (pname + version).
+            #
+            # This key is used both to group candidates and as the genericClosure key below.
+            # Computing it once per package avoids re-interpolating the same string for
+            # every incoming dependency edge.
+            (self.filterPackage environ pkg) // { _key = "${pkg.name}-${pkg.version}"; }
+          )
+          (
+            # Filter packages based on resolution-markers
+            filter (
+              pkg:
+              length pkg.resolution-markers == 0
+              || any (
+                markers:
+                resolution-markers.${markers} or (
+                  # Uv has a bug introduced in https://github.com/astral-sh/uv/pull/11513
+                  # Where internal conflict markers aren't correctly stripped.
+                  #
+                  # This makes it impossible to correctly consume a lock with conflict markers.
+                  # I'm hoping that this will eventually get fixed, but in the mean time this means that:
+                  # 1. We can only really evaluate conflict markers on a best effort basis.
+                  # 2. Degraded performance because we can no longer rely on the top-level markers as a cache lookup.
+                  evalMarkers environ (parseMarkers markers)
+                )
+              ) pkg.resolution-markers
+            ) lock.package
+          );
 
       # Group list of package candidates by package name (pname)
       candidates = groupBy (pkg: pkg.name) packages;
@@ -121,7 +124,10 @@ fix (self: {
                   dep:
                   # Most dependency edges don't pin a version (uv only records version when ambigious).
                   # Skip the filter entirely in that case.
-                  if dep.version == null then candidates.${dep.name} else filter (package: dep.version == package.version) candidates.${dep.name}
+                  if dep.version == null then
+                    candidates.${dep.name}
+                  else
+                    filter (package: dep.version == package.version) candidates.${dep.name}
                 )
                 (
                   candidate.dependencies
@@ -251,11 +257,17 @@ fix (self: {
     else
       (
         let
-          # Get a list of deselected dependency conflicts to filter
+          # Get a list of deselected dependency conflicts to filter.
+          #
+          # For each conflict declaration the single branch named in the resolution
+          # spec is selected and the others are marked for removal. A declaration
+          # with no selected branch is irrelevant to this resolution and left
+          # untouched (e.g. when building an environment that opts into none of the
+          # conflicting groups, or a group that only conflicts in another, unselected
+          # declaration). Selecting more than one branch is ambiguous and an error.
           deselected' = concatMap (
             conflict:
             let
-              # Find a single conflict branch to select
               resolution = partition (
                 def:
                 let
@@ -264,19 +276,14 @@ fix (self: {
                 in
                 elem (def.extra or def.group) extras'
               ) conflict;
-
             in
-            throwIf (length resolution.right == 0)
-              "Conflict resolution selected no conflict specifier. Misspelled extra/group?"
-              throwIf
-              (length resolution.right > 1)
+            throwIf (length resolution.right > 1)
               "Conflict resolution selected more than one conflict specifier, resolution still ambigious"
-              resolution.wrong
+              (if resolution.right == [ ] then [ ] else resolution.wrong)
           ) lock.conflicts;
           deselected = groupBy (def: def.package) deselected';
         in
         # Return rewritten lock without conflicts
-        assert deselected' != [ ];
         lock
         // {
           conflicts = [ ];
