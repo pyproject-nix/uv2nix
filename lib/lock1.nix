@@ -63,7 +63,15 @@ fix (self: {
       resolution-markers = mapAttrs (_: evalMarkers environ) lock.resolution-markers;
 
       # Filter dependencies of packages
-      packages = map (self.filterPackage environ) (
+      packages = map (
+        pkg:
+        # Attach a precomputed key (pname + version).
+        #
+        # This key is used both to group candidates and as the genericClosure key below.
+        # Computing it once per package avoids re-interpolating the same string for
+        # every incoming dependency edge.
+        (self.filterPackage environ pkg) // { _key = "${pkg.name}-${pkg.version}"; }
+      ) (
         # Filter packages based on resolution-markers
         filter (
           pkg:
@@ -88,11 +96,11 @@ fix (self: {
       candidates = groupBy (pkg: pkg.name) packages;
 
       # Group list of package candidates by qualified package name (pname + version)
-      allCandidates = groupBy (pkg: "${pkg.name}-${pkg.version}") packages;
+      allCandidates = groupBy (pkg: pkg._key) packages;
 
       # Make key return for genericClosure
       mkKey = package: {
-        key = "${package.name}-${package.version}";
+        key = package._key;
         inherit package;
       };
 
@@ -110,7 +118,10 @@ fix (self: {
             map mkKey (
               concatMap
                 (
-                  dep: filter (package: dep.version == null || dep.version == package.version) candidates.${dep.name}
+                  dep:
+                  # Most dependency edges don't pin a version (uv only records version when ambigious).
+                  # Skip the filter entirely in that case.
+                  if dep.version == null then candidates.${dep.name} else filter (package: dep.version == package.version) candidates.${dep.name}
                 )
                 (
                   candidate.dependencies
