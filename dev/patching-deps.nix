@@ -12,10 +12,8 @@ final: prev: {
           ./arpeggio.patch
         ];
 
-        nativeBuildInputs = old.nativeBuildInputs ++ [
-          (final.resolveBuildSystem {
-            setuptools = [ ];
-          })
-        ];
+        nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem {
+          setuptools = [ ];
+        };
       });
 }

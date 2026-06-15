@@ -401,6 +401,13 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         preBuild # Skips windows files
         ;
 
+      # Nixpkgs' postPatch substitutes the @version@ placeholder injected by patches.
+      # Rewrite --replace-fail to --replace so it also works under the nixpkgs-22.11
+      # smoke test, whose stdenv predates the --replace-{fail,warn} flags.
+      postPatch = builtins.replaceStrings [ "--replace-fail" ] [ "--replace" ] (
+        python3Packages.setuptools.postPatch or ""
+      );
+
       passthru.dependencies.wheel = [ ];
 
       nativeBuildInputs = [

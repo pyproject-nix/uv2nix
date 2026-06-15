@@ -22,16 +22,14 @@ final: prev: {
     # - Add it to your `uv` project
     # - Add it manually in an overlay
     # - Submit a PR to build-system-pkgs adding the build system
-    nativeBuildInputs = old.nativeBuildInputs ++ [
-      (final.resolveBuildSystem {
-        cmake = [ ];
-        ninja = [ ];
-        packaging = [ ];
-        pathspec = [ ];
-        scikit-build-core = [ ];
-        cython = [ ];
-      })
-    ];
+    nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem {
+      cmake = [ ];
+      ninja = [ ];
+      packaging = [ ];
+      pathspec = [ ];
+      scikit-build-core = [ ];
+      cython = [ ];
+    };
 
   });
 
