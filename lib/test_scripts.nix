@@ -32,6 +32,8 @@ in
         no-build-package = [ ];
         extra-build-dependencies = { };
         extra-build-variables = { };
+        config-settings = { };
+        config-settings-package = { };
       };
     };
 
@@ -45,6 +47,8 @@ in
         no-build-package = [ ];
         extra-build-dependencies = { };
         extra-build-variables = { };
+        config-settings = { };
+        config-settings-package = { };
       };
     };
   };

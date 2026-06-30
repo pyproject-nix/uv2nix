@@ -1,5 +1,7 @@
 {
   "compile-bytecode": true,
+  "config-settings": {},
+  "config-settings-package": {},
   "extra-build-dependencies": {
     "with-extra-build-dependencies": [
       {

@@ -299,6 +299,8 @@ fix (self: {
     - tool.uv.no-build-package
     - tool.uv.extra-build-dependencies
     - tool.uv.extra-build-variables
+    - tool.uv.config-settings
+    - tool.uv.config-settings-package
   */
   loadConfig =
     # Workspace root pyproject.toml
@@ -368,6 +370,8 @@ fix (self: {
         )
       ) (pyproject.tool.uv.extra-build-dependencies or { });
       extra-build-variables = pyproject.tool.uv.extra-build-variables or { };
+      config-settings = pyproject.tool.uv.config-settings or { };
+      config-settings-package = pyproject.tool.uv.config-settings-package or { };
     };
 
   /*

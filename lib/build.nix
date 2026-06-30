@@ -7,6 +7,8 @@ let
     head
     elem
     concatMap
+    attrsToList
+    isList
     assertMsg
     match
     elemAt
@@ -136,6 +138,23 @@ let
         ) deps
       );
 
+  mkConfigSettingFlags =
+    configSettings:
+    concatMap (
+      { name, value }:
+      concatMap (v: [
+        "--config-setting"
+        "${name}=${v}"
+      ]) (if isList value then value else [ value ])
+    ) (attrsToList configSettings);
+
+  # Merge global config-settings with the per-package overrides for a package.
+  mkPackageConfigSettingFlags =
+    config: package:
+    mkConfigSettingFlags (
+      (config.config-settings or { }) // (config.config-settings-package.${package.name} or { })
+    );
+
   # `uv pip install` requires precisely matching the expected wheel file names.
   # fetchurl doesn't un-escape the name, leaving percent encoding characters in the filename
   # resulting in install failures.
@@ -203,6 +222,8 @@ in
       );
 
       package-extra-build-variables = config.extra-build-variables.${package.name} or { };
+
+      uvBuildFlags = mkPackageConfigSettingFlags config package;
     in
     if isVirtual then
       # Don't build/install a virtual project, but keep it in the package set
@@ -233,6 +254,7 @@ in
         // optionalAttrs (!config.compile-bytecode) {
           UV_COMPILE_BYTECODE = "0";
         }
+        // optionalAttrs (uvBuildFlags != [ ]) { inherit uvBuildFlags; }
         // package-extra-build-variables
         // {
           nativeBuildInputs =
@@ -444,6 +466,8 @@ in
       );
 
       package-extra-build-variables = config.extra-build-variables.${package.name} or { };
+
+      uvBuildFlags = mkPackageConfigSettingFlags config package;
     in
     # make sure there is no intersection between no-binary-packages and no-build-packages for current package
     assert assertMsg (!elem package.name unbuildable-packages) (
@@ -486,6 +510,7 @@ in
             resolveBuildSystem package-extra-build-dependencies
           );
       }
+      // optionalAttrs (uvBuildFlags != [ ]) { inherit uvBuildFlags; }
       // package-extra-build-variables
       // optionalAttrs (format == "wheel") {
         # Don't strip prebuilt wheels
