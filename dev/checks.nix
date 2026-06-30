@@ -120,10 +120,17 @@ let
     }
     // lib.optionalAttrs (sourcePreference != "wheel") {
       virtual = mkCheck {
+        name = "virtual";
         root = ../lib/fixtures/virtual;
         spec = {
           virtual = [ ];
         };
+
+        # A virtual project isn't built or installed, but its dependencies are.
+        check = ''
+          python -c 'import arpeggio'
+          python -c 'import trivial' && exit 1
+        '';
       };
 
       workspace = mkCheck {
@@ -140,6 +147,22 @@ let
           pkg-a = [ ];
           pkg-b = [ ];
         };
+      };
+
+      # Don't build/install virtual roots, just their dependencies.
+      workspace-virtual-root = mkCheck {
+        name = "workspace-virtual-root";
+        root = ../lib/fixtures/workspace-virtual-root;
+        spec = {
+          workspace-virtual-root = [ ];
+          pkg-a = [ ];
+        };
+        check = ''
+          python -c 'import arpeggio'
+          python -c 'import pkg_a'
+          python -c 'import foo' && exit 1
+          python -c 'import bar' && exit 1
+        '';
       };
 
       kitchenSinkA = mkCheck {
@@ -524,6 +547,66 @@ let
             test "$(python -c 'import workspace_package; print(workspace_package.hello())')" = "Hello from workspace-package!"
             substituteInPlace ./packages/workspace-package/src/workspace_package/__init__.py --replace-fail workspace-package mutable-package
             test "$(python -c 'import workspace_package; print(workspace_package.hello())')" = "Hello from mutable-package!"
+            touch $out
+          '';
+
+      editable-virtual-root =
+        let
+          workspaceRoot = ../lib/fixtures/workspace-virtual-root;
+          ws = uv2nix.workspace.loadWorkspace { inherit workspaceRoot; };
+
+          interpreter = pkgs.python312;
+
+          overlay = ws.mkPyprojectOverlay {
+            inherit sourcePreference;
+            environ = { };
+          };
+          editableOverlay = ws.mkEditablePyprojectOverlay {
+            root = "$NIX_BUILD_TOP";
+          };
+
+          baseSet = pkgs.callPackage pyproject-nix.build.packages {
+            python = interpreter;
+          };
+
+          pythonSet = baseSet.overrideScope (
+            lib.composeManyExtensions [
+              buildSystems
+              overlay
+              buildSystemOverrides
+              patchingDeps
+              editableOverlay
+              (final: prev: {
+                pkg-a = prev.pkg-a.overrideAttrs (old: {
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+              })
+            ]
+          );
+
+          pythonEnv = pythonSet.pythonPkgsHostHost.mkVirtualEnv "editable-virtual-root-venv" {
+            workspace-virtual-root = [ ];
+            pkg-a = [ ];
+          };
+
+        in
+        pkgs.runCommand "editable-virtual-root-test"
+          {
+            nativeBuildInputs = [ pythonEnv ];
+          }
+          ''
+            cp -r ${workspaceRoot}/* .
+            chmod -R +w .
+
+            # The virtual root's dependency is present, and the member is editable.
+            python -c 'import arpeggio'
+            test "$(python -c 'import pkg_a; print(pkg_a.hello())')" = "Hello from pkg-a!"
+            substituteInPlace ./packages/pkg-a/src/pkg_a/__init__.py --replace-fail pkg-a mutable-package
+            test "$(python -c 'import pkg_a; print(pkg_a.hello())')" = "Hello from mutable-package!"
             touch $out
           '';
 

@@ -170,6 +170,8 @@ in
       darwinMinVersionHook ? null,
     }:
     let
+      isVirtual = package.source ? virtual;
+
       isEditable = editableRoot != null;
 
       attrs =
@@ -202,41 +204,65 @@ in
 
       package-extra-build-variables = config.extra-build-variables.${package.name} or { };
     in
-    stdenv.mkDerivation (
-      attrs
-      // optionalAttrs (!config.compile-bytecode) {
-        UV_COMPILE_BYTECODE = "0";
-      }
-      // package-extra-build-variables
-      // {
-        nativeBuildInputs =
-          (attrs.nativeBuildInputs or [ ])
-          ++ optionals (package-extra-build-dependencies != [ ]) (
-            resolveBuildSystem package-extra-build-dependencies
-          );
+    if isVirtual then
+      # Don't build/install a virtual project, but keep it in the package set
+      # so its dependencies are resolved into the environment.
+      stdenv.mkDerivation {
+        pname = package.name;
+        inherit (package) version;
 
-        buildInputs =
-          (attrs.buildInputs or [ ])
-          ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
-            (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion)
-          ]);
+        dontUnpack = true;
+        dontConfigure = true;
+        dontBuild = true;
 
-        passthru = attrs.passthru // {
-          dependencies =
-            # Include build-system dependencies for editable mode by merging pyproject.toml rendered deps with uv.lock
-            (optionalAttrs isEditable attrs.passthru.dependencies) // (mkSpec package.dependencies);
+        installPhase = ''
+          runHook preInstall
+          mkdir -p $out
+          runHook postInstall
+        '';
+
+        passthru = {
+          dependencies = mkSpec package.dependencies;
           optional-dependencies = mapAttrs (_: mkSpec) package.optional-dependencies;
           dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
         };
       }
-      // optionalAttrs stdenv.isDarwin {
-        sandboxProfile = darwinSandboxProfile;
-      }
-      // {
-        inherit (package) version;
-        pname = package.name;
-      }
-    );
+    else
+      stdenv.mkDerivation (
+        attrs
+        // optionalAttrs (!config.compile-bytecode) {
+          UV_COMPILE_BYTECODE = "0";
+        }
+        // package-extra-build-variables
+        // {
+          nativeBuildInputs =
+            (attrs.nativeBuildInputs or [ ])
+            ++ optionals (package-extra-build-dependencies != [ ]) (
+              resolveBuildSystem package-extra-build-dependencies
+            );
+
+          buildInputs =
+            (attrs.buildInputs or [ ])
+            ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
+              (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion)
+            ]);
+
+          passthru = attrs.passthru // {
+            dependencies =
+              # Include build-system dependencies for editable mode by merging pyproject.toml rendered deps with uv.lock
+              (optionalAttrs isEditable attrs.passthru.dependencies) // (mkSpec package.dependencies);
+            optional-dependencies = mapAttrs (_: mkSpec) package.optional-dependencies;
+            dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
+          };
+        }
+        // optionalAttrs stdenv.isDarwin {
+          sandboxProfile = darwinSandboxProfile;
+        }
+        // {
+          inherit (package) version;
+          pname = package.name;
+        }
+      );
 
   /*
     Create a function returning an intermediate attributes set shared between builder implementations
