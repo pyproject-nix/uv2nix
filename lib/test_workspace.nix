@@ -21,6 +21,7 @@ let
     no-binary-no-build = ./fixtures/no-binary-no-build;
     withLegacy = ./fixtures/workspace-with-legacy;
     withExtraBuildDependencies = ./fixtures/with-extra-build-dependencies;
+    withConfigSettings = ./fixtures/with-config-settings;
   };
 
 in

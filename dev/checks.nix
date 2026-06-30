@@ -356,6 +356,41 @@ let
           '';
         });
 
+      withConfigSettings =
+        let
+          root = ../lib/fixtures/with-config-settings;
+          ws = uv2nix.workspace.loadWorkspace { workspaceRoot = root; };
+
+          overlay = ws.mkPyprojectOverlay {
+            inherit sourcePreference;
+          };
+
+          interpreter = pkgs.python312 or pkgs.python311;
+
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = interpreter;
+            }).overrideScope
+              (
+                lib.composeManyExtensions [
+                  buildSystems
+                  overlay
+                  buildSystemOverrides
+                  patchingDeps
+                ]
+              );
+
+        in
+        # Test that both the global config-settings and the per-package
+        # config-settings-package are forwarded to `uv build` via uvBuildFlags.
+        pythonSet.with-config-settings.overrideAttrs (old: {
+          preBuild = (old.preBuild or "") + ''
+            echo "uvBuildFlags=$uvBuildFlags"
+            echo "$uvBuildFlags" | grep -q -- '--config-setting editable_mode=compat'
+            echo "$uvBuildFlags" | grep -q -- '--config-setting foo=bar'
+          '';
+        });
+
       testMultiChoicePackageNoMarker = mkCheck {
         name = "multi-choice-no-marker";
         root = ../lib/fixtures/multi-choice-package;

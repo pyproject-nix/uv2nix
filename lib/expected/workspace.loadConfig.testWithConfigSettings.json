@@ -1,11 +1,17 @@
 {
   "compile-bytecode": true,
-  "config-settings": {},
-  "config-settings-package": {},
+  "config-settings": {
+    "editable_mode": "compat"
+  },
+  "config-settings-package": {
+    "with-config-settings": {
+      "foo": "bar"
+    }
+  },
   "extra-build-dependencies": {},
   "extra-build-variables": {},
   "no-binary": false,
   "no-binary-package": [],
-  "no-build": true,
+  "no-build": false,
   "no-build-package": []
 }
