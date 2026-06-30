@@ -210,7 +210,10 @@ fix (self: {
           # Editable root as a string.
           root ? (toString workspaceRoot),
           # Workspace members to make editable as a list of strings. Defaults to all local projects.
-          members ? map (package: package.name) localPackages,
+          #
+          # Virtual projects (tool.uv.package = false) aren't built or installed, so there is
+          # nothing to make editable; exclude them from the default member set.
+          members ? concatMap (package: optional (!(package.source ? virtual)) package.name) localPackages,
         }:
         assert assertMsg (!hasPrefix builtins.storeDir root) ''
           Editable root was passed as a Nix store path.
