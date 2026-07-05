@@ -259,7 +259,7 @@ in
         // {
           nativeBuildInputs =
             (attrs.nativeBuildInputs or [ ])
-            ++ optionals (package-extra-build-dependencies != [ ]) (
+            ++ optionals (package-extra-build-dependencies != { }) (
               resolveBuildSystem package-extra-build-dependencies
             );
 
