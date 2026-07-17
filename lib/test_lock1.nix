@@ -220,7 +220,30 @@ in
         testDevDeps = testResolve "withToolUvDevDeps" { };
         testResolveKitchenSink = testResolve "kitchenSinkA" { };
         testMultiPythons = testResolve "multiPythons" { };
+      }
+    // {
+      # Regression test: reduceDependencies must consult version pins carried
+      # on optional-dependency and dev-dependency edges when disambiguating a
+      # package that has multiple candidates in the closure. Previously only
+      # plain `dependencies` were consulted, so pins on extras/groups were
+      # ignored and resolution failed with "Infinite recursion".
+      testDisambiguateViaDevDeps = {
+        expr =
+          let
+            lock = lock1.parseLock (importTOML ./fixtures/disambiguate-dev-dep/uv.lock);
+            resolved = lock1.resolveDependencies {
+              inherit lock;
+              environ = environs.cpython312;
+              dependencies = [
+                "root"
+                "arpeggio"
+              ];
+            };
+          in
+          resolved.arpeggio.version;
+        expected = "2.0.0";
       };
+    };
 
   filterConflicts =
     let

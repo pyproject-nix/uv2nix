@@ -101,6 +101,13 @@ fix (self: {
       # Group list of package candidates by qualified package name (pname + version)
       allCandidates = groupBy (pkg: pkg._key) packages;
 
+      # All outgoing dependency edges of a package, across regular deps, extras and groups.
+      allEdges =
+        pkg:
+        pkg.dependencies
+        ++ concatLists (attrValues pkg.optional-dependencies)
+        ++ concatLists (attrValues pkg.dev-dependencies);
+
       # Make key return for genericClosure
       mkKey = package: {
         key = package._key;
@@ -119,21 +126,15 @@ fix (self: {
           concatMap (
             candidate:
             map mkKey (
-              concatMap
-                (
-                  dep:
-                  # Most dependency edges don't pin a version (uv only records version when ambigious).
-                  # Skip the filter entirely in that case.
-                  if dep.version == null then
-                    candidates.${dep.name}
-                  else
-                    filter (package: dep.version == package.version) candidates.${dep.name}
-                )
-                (
-                  candidate.dependencies
-                  ++ (concatLists (attrValues candidate.optional-dependencies))
-                  ++ (concatLists (attrValues candidate.dev-dependencies))
-                )
+              concatMap (
+                dep:
+                # Most dependency edges don't pin a version (uv only records version when ambigious).
+                # Skip the filter entirely in that case.
+                if dep.version == null then
+                  candidates.${dep.name}
+                else
+                  filter (package: dep.version == package.version) candidates.${dep.name}
+              ) (allEdges candidate)
             )
           ) allCandidates.${key};
       });
@@ -159,9 +160,9 @@ fix (self: {
                   filterDeps' =
                     package:
                     let
-                      filtered' = filter (x: x.name == name) package.dependencies;
+                      filtered' = filter (x: x.name == name) (allEdges package);
                     in
-                    if length filtered' > 1 then
+                    if length (unique (map (x: x.version) filtered')) > 1 then
                       (throw ''
                         Non disjoint install time resolution for package '${name}' depending on multiple versions of '${package.name}'.
 
