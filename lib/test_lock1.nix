@@ -276,5 +276,22 @@ in
           }
         ];
       };
+
+      # Regression test: a conflict declaration referencing a package that is
+      # absent from the resolution spec is irrelevant to that resolution and
+      # must be left untouched, not raise an error. This mirrors the graceful
+      # `or [ ]` handling in overlays.computeConflictExtras.
+      testAbsentFromSpec = {
+        expr = mkTest { };
+        expected = [
+          {
+            dev-dependencies = [ "group-c" ];
+            optional-dependencies = [
+              "extra-a"
+              "extra-b"
+            ];
+          }
+        ];
+      };
     };
 }

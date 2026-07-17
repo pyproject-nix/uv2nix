@@ -271,8 +271,7 @@ fix (self: {
               resolution = partition (
                 def:
                 let
-                  extras' =
-                    spec.${def.package} or (throw "Package '${def.package}' not present in resolution specification");
+                  extras' = spec.${def.package} or [ ];
                 in
                 elem (def.extra or def.group) extras'
               ) conflict;
