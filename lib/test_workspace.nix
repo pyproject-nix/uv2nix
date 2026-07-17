@@ -46,19 +46,63 @@ in
       testWorkspaceExcluded = test ./fixtures/workspace-with-excluded [ "/packages/included-package" ];
     };
 
-  loadConfig = lib.mapAttrs' (
-    name': root:
-    let
-      name = "test${capitalise name'}";
-      members = workspace.discoverWorkspace { workspaceRoot = root; };
-      pyprojects = map (_m: lib.importTOML (root + "/pyproject.toml")) members;
-      config = workspace.loadConfig (elemAt pyprojects 0) pyprojects;
-    in
-    nameValuePair name {
-      expr = config;
-      expected = lib.importJSON ./expected/workspace.loadConfig.${name}.json;
-    }
-  ) workspaces;
+  loadConfig =
+    lib.mapAttrs' (
+      name': root:
+      let
+        name = "test${capitalise name'}";
+        members = workspace.discoverWorkspace { workspaceRoot = root; };
+        pyprojects = map (_m: lib.importTOML (root + "/pyproject.toml")) members;
+        config = workspace.loadConfig (elemAt pyprojects 0) pyprojects;
+      in
+      nameValuePair name {
+        expr = config;
+        expected = lib.importJSON ./expected/workspace.loadConfig.${name}.json;
+      }
+    ) workspaces
+    // {
+      # Regression test: an extra-build-dependencies entry given as a table
+      # (with a `requirement` string and optional `match-runtime`) must have
+      # its requirement string parsed, not the whole table.
+      testExtraBuildDependenciesTable = {
+        expr =
+          (workspace.loadConfig {
+            tool.uv.extra-build-dependencies.pkg = [
+              {
+                requirement = "setuptools>=40";
+                match-runtime = true;
+              }
+            ];
+          } [ ]).extra-build-dependencies;
+        expected = {
+          pkg = [
+            {
+              match-runtime = true;
+              requirement = {
+                name = "setuptools";
+                conditions = [
+                  {
+                    op = ">=";
+                    version = {
+                      dev = null;
+                      epoch = 0;
+                      local = null;
+                      post = null;
+                      pre = null;
+                      release = [ 40 ];
+                      str = "40";
+                    };
+                  }
+                ];
+                extras = [ ];
+                markers = null;
+                url = null;
+              };
+            }
+          ];
+        };
+      };
+    };
 
   loadWorkspace.deps =
     let

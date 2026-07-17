@@ -356,17 +356,12 @@ fix (self: {
           # a `requirement` field and an optional `match-runtime` field.
           #
           # We normalise this parsing into the table form.
-          (
-            if isAttrs req then
-              req
-            else if isString req then
-              { }
-            else
-              throw "Unhandled type: ${typeOf req}"
-          )
-          // {
-            requirement = pep508.parseString req;
-          }
+          if isAttrs req then
+            req // { requirement = pep508.parseString req.requirement; }
+          else if isString req then
+            { requirement = pep508.parseString req; }
+          else
+            throw "Unhandled type: ${typeOf req}"
         )
       ) (pyproject.tool.uv.extra-build-dependencies or { });
       extra-build-variables = pyproject.tool.uv.extra-build-variables or { };
