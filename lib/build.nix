@@ -476,10 +476,10 @@ in
     );
     assert assertMsg (
       format == "wheel" -> no-binary != null -> !no-binary
-    ) "Package source for '${package.name}' was derived as sdist, in tool.uv.no-binary is set to true";
+    ) "Package source for '${package.name}' was derived as wheel, but tool.uv.no-binary is set to true";
     assert assertMsg (
-      format == "sdist" -> no-build != null -> !no-build
-    ) "Package source for '${package.name}' was derived as sdist, in tool.uv.no-build is set to true";
+      format == "pyproject" -> no-build != null -> !no-build
+    ) "Package source for '${package.name}' was derived as sdist, but tool.uv.no-build is set to true";
     assert assertMsg (format == "pyproject" -> !elem package.name no-build-package)
       "Package source for '${package.name}' was derived as sdist, but was present in tool.uv.no-build-package";
     assert assertMsg (format == "wheel" -> !elem package.name no-binary-package)

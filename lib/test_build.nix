@@ -178,7 +178,7 @@ in
               "arpeggio"
             ).src.url;
         expectedError.type = "ThrownError";
-        expectedError.msg = "Package source for 'arpeggio' was derived as sdist, in tool.uv.no-binary is set to true";
+        expectedError.msg = "Package source for 'arpeggio' was derived as wheel, but tool.uv.no-binary is set to true";
       };
 
       testNoBuildNoBinaryPrefSdist = {
@@ -187,12 +187,41 @@ in
             (
               (mkPackageTest {
                 projectName = "no-binary-no-build";
-                sourcePreference = "wheel";
+                sourcePreference = "sdist";
               })
               "arpeggio"
             ).src.url;
         expectedError.type = "ThrownError";
-        expectedError.msg = "Package source for 'arpeggio' was derived as sdist, in tool.uv.no-binary is set to true";
+        expectedError.msg = "Package source for 'arpeggio' was derived as wheel, but tool.uv.no-binary is set to true";
+      };
+
+      # Regression test: when tool.uv.no-build is set but no compatible wheel exists,
+      # the source is derived as an sdist and the no-build assertion must fire.
+      # Previously the assertion checked for format == "sdist" (a value never assigned)
+      # so the sdist build would silently proceed.
+      testNoBuildSdistFallback = {
+        expr =
+          let
+            buildRemotePackage = build.remote {
+              workspaceRoot = projectDirs.no-build;
+              config = workspace.loadConfig projects.no-build.pyproject [ projects.no-build.pyproject ];
+              defaultSourcePreference = "wheel";
+              environ = null;
+            };
+            package = (lock1.parsePackage { } (findFirstPkg "arpeggio" locks.no-build.package)) // {
+              wheels = [ ];
+            };
+          in
+          baseNameOf
+            (pkgs.callPackage (buildRemotePackage package) {
+              pyprojectHook = null;
+              pyprojectWheelHook = null;
+              python = pkgs.python312;
+              sourcePreference = "wheel";
+              resolveBuildSystem = null;
+            }).src.url;
+        expectedError.type = "ThrownError";
+        expectedError.msg = "Package source for 'arpeggio' was derived as sdist, but tool.uv.no-build is set to true";
       };
     };
 
