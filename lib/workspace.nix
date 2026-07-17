@@ -392,7 +392,7 @@ fix (self: {
 
     in
     # Get a list of workspace member directories
-    filter (x: length excluded == 0 || any (e: !e x) excluded) (
+    filter (x: !any (e: e x) excluded) (
       concatMap (
         glob:
         let
