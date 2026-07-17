@@ -223,6 +223,37 @@ in
         expectedError.type = "ThrownError";
         expectedError.msg = "Package source for 'arpeggio' was derived as sdist, but tool.uv.no-build is set to true";
       };
+
+      # Regression test: an sdist served from a local (path-based) registry has
+      # `sdist.path` rather than `sdist.url`. Previously this fell into the
+      # `fetchurl` branch and failed with `attribute 'url' missing`.
+      testLocalIndexSdist = {
+        expr =
+          let
+            projectDir = ./fixtures/local-index-sdist;
+            project = pyproject-nix.lib.project.loadUVPyproject { projectRoot = projectDir; };
+            buildRemotePackage = build.remote {
+              workspaceRoot = projectDir;
+              config = workspace.loadConfig project.pyproject [ project.pyproject ];
+              defaultSourcePreference = "sdist";
+              environ = null;
+            };
+            package = lock1.parsePackage { } (
+              findFirstPkg "attrs" (importTOML (projectDir + "/uv.lock")).package
+            );
+          in
+          baseNameOf (
+            toString
+              (pkgs.callPackage (buildRemotePackage package) {
+                pyprojectHook = null;
+                pyprojectWheelHook = null;
+                python = pkgs.python312;
+                sourcePreference = "sdist";
+                resolveBuildSystem = null;
+              }).src
+          );
+        expected = "attrs-23.1.0.tar.gz";
+      };
     };
 
 }

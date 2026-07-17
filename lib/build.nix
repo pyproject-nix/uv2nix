@@ -410,6 +410,8 @@ in
             outPath = "${workspaceRoot + "/${source.path}"}";
             passthru.url = source.path;
           }
+        else if isPypi && format == "pyproject" && package.sdist ? path then
+          (workspaceRoot + "/${source.registry}/${package.sdist.path}")
         else if (isPypi || isURL) && format == "pyproject" then
           fetchurl {
             url = package.source.url or package.sdist.url;
