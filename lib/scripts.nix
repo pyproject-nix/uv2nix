@@ -23,7 +23,7 @@ let
     filter
     ;
 
-  mkSpec = dependencies: listToAttrs (map (dep: nameValuePair dep.name dep.extra) dependencies);
+  mkSpec = dependencies: listToAttrs (map (dep: nameValuePair dep.name dep.extras) dependencies);
 
 in
 

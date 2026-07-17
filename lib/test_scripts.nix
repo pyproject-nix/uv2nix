@@ -1,4 +1,10 @@
-{ lib, scripts, ... }:
+{
+  lib,
+  scripts,
+  pkgs,
+  pyproject-nix,
+  ...
+}:
 
 let
   inherit (lib) mapAttrs filterAttrs hasSuffix;
@@ -50,6 +56,26 @@ in
         config-settings = { };
         config-settings-package = { };
       };
+    };
+  };
+
+  # Regression test: a script's dependency spec is built from PEP-508
+  # requirements which expose `.extras`. Previously mkOverlay read `.extra`,
+  # which is only present on uv.lock dependency edges; this stayed hidden
+  # until the spec's values were forced by conflict handling.
+  loadScript.mkOverlay = {
+    testSpecForcedByConflicts = {
+      expr =
+        let
+          overlay = scripts'."conflicts.py".mkOverlay { sourcePreference = "wheel"; };
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              python = pkgs.python312;
+            }).overrideScope
+              overlay;
+        in
+        pythonSet.arpeggio.version;
+      expected = "2.0.2";
     };
   };
 
