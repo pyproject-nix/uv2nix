@@ -254,6 +254,36 @@ in
           );
         expected = "attrs-23.1.0.tar.gz";
       };
+
+      # Regression test: when a direct-URL wheel isn't found among the package's
+      # wheels, the diagnostic should say so rather than fail with
+      # "cannot coerce a list to a string".
+      testWheelURLNotFound = {
+        expr =
+          let
+            buildRemotePackage = build.remote {
+              workspaceRoot = projectDirs.trivial;
+              config = workspace.loadConfig projects.trivial.pyproject [ projects.trivial.pyproject ];
+              defaultSourcePreference = "wheel";
+              environ = null;
+            };
+            package = (lock1.parsePackage { } (findFirstPkg "arpeggio" locks.trivial.package)) // {
+              source = {
+                url = "https://example.org/nonexistent.whl";
+              };
+              sdist = { };
+            };
+          in
+          (pkgs.callPackage (buildRemotePackage package) {
+            pyprojectHook = null;
+            pyprojectWheelHook = null;
+            python = pkgs.python312;
+            sourcePreference = "wheel";
+            resolveBuildSystem = null;
+          }).src.url;
+        expectedError.type = "ThrownError";
+        expectedError.msg = "not found in list of wheels";
+      };
     };
 
 }

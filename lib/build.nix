@@ -419,9 +419,10 @@ in
           }
         else if isURL && format == "wheel" then
           let
-            wheel = findFirst (
-              whl: whl.url == source.url
-            ) (throw "Wheel URL ${source.url} not found in list of wheels: ${package.wheels}") package.wheels;
+            wheel =
+              findFirst (whl: whl.url == source.url)
+                (throw "Wheel URL ${source.url} not found in list of wheels: ${toJSON package.wheels}")
+                package.wheels;
           in
           fetchurl {
             name = srcFilename wheel.url;
