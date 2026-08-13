@@ -265,7 +265,7 @@ in
 
           buildInputs =
             (attrs.buildInputs or [ ])
-            ++ (optionals (stdenv.isDarwin && darwinMinVersionHook != null) [
+            ++ (optionals (stdenv.hostPlatform.isDarwin && darwinMinVersionHook != null) [
               (darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion)
             ]);
 
@@ -277,7 +277,7 @@ in
             dependency-groups = mapAttrs (_: mkSpec) package.dev-dependencies;
           };
         }
-        // optionalAttrs stdenv.isDarwin {
+        // optionalAttrs stdenv.hostPlatform.isDarwin {
           sandboxProfile = darwinSandboxProfile;
         }
         // {
@@ -508,7 +508,7 @@ in
           optional (hasSuffix ".zip" (self.src.passthru.url or "")) unzip
           ++ optional (format == "pyproject") pyprojectHook
           ++ optional (format == "wheel") pyprojectWheelHook
-          ++ optional (format == "wheel" && stdenv.isLinux) autoPatchelfHook
+          ++ optional (format == "wheel" && stdenv.hostPlatform.isLinux) autoPatchelfHook
           ++ optionals (package-extra-build-dependencies != { }) (
             resolveBuildSystem package-extra-build-dependencies
           );
@@ -522,7 +522,7 @@ in
         # Add wheel utils
         buildInputs =
           # Add manylinux platform dependencies.
-          optionals (stdenv.isLinux && stdenv.hostPlatform.libc == "glibc") (
+          optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.libc == "glibc") (
             unique (
               concatMap (
                 tag:
@@ -541,7 +541,7 @@ in
               ) selectedWheel'.platformTags
             )
           )
-          ++ (optional (stdenv.isDarwin && darwinMinVersionHook != null) (
+          ++ (optional (stdenv.hostPlatform.isDarwin && darwinMinVersionHook != null) (
             darwinMinVersionHook stdenv.targetPlatform.darwinSdkVersion
           ));
       }
@@ -550,7 +550,7 @@ in
           sourceRoot="$sourceRoot/${subdirectory}"
         '';
       }
-      // optionalAttrs stdenv.isDarwin {
+      // optionalAttrs stdenv.hostPlatform.isDarwin {
         sandboxProfile = darwinSandboxProfile;
       }
     );
