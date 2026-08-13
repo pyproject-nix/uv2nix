@@ -738,7 +738,7 @@ in
 # builder impl  -> sourcePreference
 mkChecks "wheel"
 // mkChecks "sdist"
-// (lib.optionalAttrs (!stdenv.isDarwin) {
+// (lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
   no-compile-bytecode =
     let
       interpreter = pkgs.python3;

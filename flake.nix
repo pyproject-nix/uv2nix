@@ -214,7 +214,7 @@
               uv2nix = self.lib;
             };
           in
-          lib.optionalAttrs (!lib.hasSuffix "-freebsd" system && !pkgs'.stdenv.isDarwin) {
+          lib.optionalAttrs (!lib.hasSuffix "-freebsd" system && !pkgs'.stdenv.hostPlatform.isDarwin) {
             # Fails on aarch64-darwin with oom
             trivial-22_11 = checks'.trivial;
           }

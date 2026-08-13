@@ -32,8 +32,8 @@ stdenv.mkDerivation (
       inherit sha256;
     };
 
-    nativeBuildInputs = lib.optional stdenv.isLinux autoPatchelfHook;
-    buildInputs = lib.optional stdenv.isLinux stdenv.cc.cc;
+    nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+    buildInputs = lib.optional stdenv.hostPlatform.isLinux stdenv.cc.cc;
 
     dontConfigure = true;
     dontBuild = true;
