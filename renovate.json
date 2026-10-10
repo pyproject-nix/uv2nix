@@ -15,5 +15,16 @@
   ],
   "nix": {
     "enabled": true
-  }
+  },
+  "packageRules": [
+    {
+      "matchManagers": [
+        "pep621"
+      ],
+      "matchDepTypes": [
+        "build-system.requires"
+      ],
+      "rangeStrategy": "widen"
+    }
+  ]
 }
