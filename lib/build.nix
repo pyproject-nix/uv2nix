@@ -69,7 +69,14 @@ let
     else
       throw "Could not parse git url: ${url}";
 
-  mkSpec = dependencies: listToAttrs (map (dep: nameValuePair dep.name dep.extra) dependencies);
+  # Make a dependency spec from a list of dependencies.
+  # A package can be depended on more than once (e.g. `requests` and `requests[socks]`
+  # under different markers); union the extras rather than keeping the first.
+  mkSpecWith =
+    getExtras: dependencies:
+    mapAttrs (_: deps: unique (concatMap getExtras deps)) (groupBy (dep: dep.name) dependencies);
+
+  mkSpec = mkSpecWith (dep: dep.extra);
 
   unquoteURL =
     replaceStrings
@@ -120,21 +127,13 @@ let
     if deps == [ ] then
       { }
     else
-      listToAttrs (
+      mkSpecWith (req: req.extras) (
         concatMap (
           extra-dep:
           let
             req = extra-dep.requirement;
           in
-          if (req.markers == null || pep508.evalMarkers environ req.markers) then
-            [
-              {
-                inherit (req) name;
-                value = req.extras;
-              }
-            ]
-          else
-            [ ]
+          if (req.markers == null || pep508.evalMarkers environ req.markers) then [ req ] else [ ]
         ) deps
       );
 

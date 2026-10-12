@@ -100,6 +100,30 @@ in
         expectedError.type = "AssertionError";
       };
 
+      # requests and requests[socks] both apply on linux; the extra must survive
+      testMarkerExtrasMerged = {
+        expr =
+          let
+            ws = workspace.loadWorkspace { workspaceRoot = ./fixtures/marker-extras; };
+            pythonSet =
+              (pkgs.callPackage pyproject-nix.build.packages {
+                python = pkgs.python312;
+              }).overrideScope
+                (
+                  ws.mkPyprojectOverlay {
+                    sourcePreference = "wheel";
+                    environ = {
+                      sys_platform = "linux";
+                    };
+                  }
+                );
+          in
+          pythonSet.marker-extras.passthru.dependencies;
+        expected = {
+          requests = [ "socks" ];
+        };
+      };
+
       testConflictsIndexBoth = {
         expr = mkTest ../lib/fixtures/conflicts-index {
           packages = [ "conflicts-index" ];

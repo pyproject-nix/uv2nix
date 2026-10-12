@@ -1,0 +1,13 @@
+[project]
+name = "marker-extras"
+version = "0.1.0"
+requires-python = ">=3.12"
+# Two edges to one package: with an extra on linux, without elsewhere
+dependencies = [
+    "requests[socks]>=2.32.3; sys_platform == 'linux'",
+    "requests>=2.32.3; sys_platform != 'linux'",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
