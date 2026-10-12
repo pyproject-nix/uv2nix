@@ -9,7 +9,14 @@
 }:
 
 let
-  inherit (lib) mapAttrs findFirst importTOML;
+  inherit (lib)
+    mapAttrs
+    findFirst
+    importTOML
+    recursiveUpdate
+    last
+    ;
+  inherit (builtins) toJSON fromJSON;
 
   projectDirs = {
     workspace = ./fixtures/workspace;
@@ -30,6 +37,7 @@ let
     no-build = ./fixtures/no-build;
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
+    markerExtras = ./fixtures/marker-extras;
   };
 
   projects = mapAttrs (
@@ -283,6 +291,42 @@ in
           }).src.url;
         expectedError.type = "ThrownError";
         expectedError.msg = "not found in list of wheels";
+      };
+
+      # Regression test: several extra-build-dependencies on one package must merge
+      # their extras, not keep only the first requirement.
+      testExtraBuildDependenciesMergeExtras = {
+        expr =
+          let
+            pyproject = recursiveUpdate projects.markerExtras.pyproject {
+              tool.uv.extra-build-dependencies.requests = [
+                "setuptools"
+                "setuptools[core]; sys_platform == 'linux'"
+                "setuptools[cython]; sys_platform == 'darwin'"
+              ];
+            };
+            buildRemotePackage = build.remote {
+              workspaceRoot = projectDirs.markerExtras;
+              config = workspace.loadConfig pyproject [ pyproject ];
+              defaultSourcePreference = "sdist";
+              environ = pyproject-nix.lib.pep508.setEnviron (pyproject-nix.lib.pep508.mkEnviron pkgs.python312) {
+                sys_platform = "linux";
+              };
+            };
+            package = lock1.parsePackage { } (findFirstPkg "requests" locks.markerExtras.package);
+            drv = pkgs.callPackage (buildRemotePackage package) {
+              pyprojectHook = null;
+              pyprojectWheelHook = null;
+              python = pkgs.python312;
+              sourcePreference = "sdist";
+              # nativeBuildInputs only accepts derivations & strings
+              resolveBuildSystem = spec: [ (toJSON spec) ];
+            };
+          in
+          fromJSON (last drv.nativeBuildInputs);
+        expected = {
+          setuptools = [ "core" ];
+        };
       };
     };
 
