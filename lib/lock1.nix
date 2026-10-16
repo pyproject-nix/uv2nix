@@ -485,6 +485,7 @@ fix (self: {
       metadata ? { },
       wheels ? [ ],
       sdist ? { },
+      default-groups ? [ ],
     }:
     assert assertMsg (name != "python")
       "A package from uv.lock is called `python` which is a reserved name for the interpreter derivation";
