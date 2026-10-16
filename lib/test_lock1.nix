@@ -160,6 +160,7 @@ in
         testWithResolutionMarkers = parsePkg "arpeggio" locks.multiChoicePackage;
         testOptionalDeps = parsePkg "optional-deps" locks.optionalDeps;
         testMetadataRequiresDev = parsePkg "with-tool-uv-devdeps" locks.withToolUvDevDeps;
+        testDefaultGroups = parsePkg "with-tool-uv-devdeps" locks.withToolUvDevDeps;
         testWithResolverOptions = parsePkg "arpeggio" locks.withResolverOptions;
         testWithExtra = parsePkg "with-extra" locks.withExtra;
       };
