@@ -337,7 +337,8 @@ in
     let
       inherit (package) source;
       isGit = source ? git;
-      isPypi = source ? registry; # From pypi registry
+      isRegistry = source ? registry;
+      isPypi = isRegistry && source.registry == "https://pypi.org/simple";
       isURL = source ? url;
       isPath = source ? path; # Path to sdist
 
@@ -369,7 +370,7 @@ in
             # Package is sdist if the source file is present in the sdist attrset
             if (package.sdist != { }) then "pyproject" else "wheel"
           )
-        else if isPypi then
+        else if isRegistry then
           (
             if preferWheel && compatibleWheels != [ ] then
               "wheel"
@@ -409,13 +410,34 @@ in
             outPath = "${workspaceRoot + "/${source.path}"}";
             passthru.url = source.path;
           }
-        else if isPypi && format == "pyproject" && package.sdist ? path then
+        else if isRegistry && format == "pyproject" && package.sdist ? path then
           (workspaceRoot + "/${source.registry}/${package.sdist.path}")
-        else if (isPypi || isURL) && format == "pyproject" then
-          fetchurl {
-            url = package.source.url or package.sdist.url;
-            inherit (package.sdist) hash;
-          }
+        else if (isRegistry || isURL) && format == "pyproject" then
+          let
+            sdistUrl = package.source.url or package.sdist.url;
+          in
+          fetchurl (
+            {
+              url = sdistUrl;
+              inherit (package.sdist) hash;
+            }
+            // optionalAttrs isRegistry (
+              if isPypi then
+                {
+                  meta.identifiers.purlParts = {
+                    type = "pypi";
+                    spec = "${package.name}@${package.version}";
+                  };
+                }
+              else
+                {
+                  meta.identifiers.purls = [
+                    "pkg:pypi/${package.name}@${package.version}"
+                    "pkg:generic/${package.name}@${package.version}?download_url=${sdistUrl}"
+                  ];
+                }
+            )
+          )
         else if isURL && format == "wheel" then
           let
             wheel =
@@ -435,10 +457,28 @@ in
             # Fetch wheel from URL
             if selectedWheel ? url then
               if selectedWheel ? hash then
-                fetchurl {
-                  name = srcFilename selectedWheel.url;
-                  inherit (selectedWheel) url hash;
-                }
+                fetchurl (
+                  {
+                    name = srcFilename selectedWheel.url;
+                    inherit (selectedWheel) url hash;
+                  }
+                  // optionalAttrs isRegistry (
+                    if isPypi then
+                      {
+                        meta.identifiers.purlParts = {
+                          type = "pypi";
+                          spec = "${package.name}@${package.version}";
+                        };
+                      }
+                    else
+                      {
+                        meta.identifiers.purls = [
+                          "pkg:pypi/${package.name}@${package.version}"
+                          "pkg:generic/${package.name}@${package.version}?download_url=${selectedWheel.url}"
+                        ];
+                      }
+                  )
+                )
               else
                 lib.warn "wheel url '${selectedWheel.url}' missing hash, falling back to builtins.fetchurl" (
                   builtins.fetchurl {

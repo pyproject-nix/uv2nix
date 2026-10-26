@@ -38,6 +38,7 @@ let
     no-binary = ./fixtures/no-binary;
     no-binary-no-build = ./fixtures/no-binary-no-build;
     markerExtras = ./fixtures/marker-extras;
+    custom-registry = ./fixtures/custom-registry;
   };
 
   projects = mapAttrs (
@@ -291,6 +292,96 @@ in
           }).src.url;
         expectedError.type = "ThrownError";
         expectedError.msg = "not found in list of wheels";
+      };
+
+      testNoPurlDirectUrlWheel = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "kitchenSinkA";
+              sourcePreference = "wheel";
+            })
+            "arpeggio"
+          ).src.meta.identifiers ? purl;
+        expected = false;
+      };
+
+      testPurlPypiSdist = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "no-binary";
+              sourcePreference = "sdist";
+            })
+            "arpeggio"
+          ).src.meta.identifiers.purl;
+        expected = "pkg:pypi/arpeggio@2.0.2";
+      };
+
+      testPurlPypiWheel = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "trivial";
+              sourcePreference = "wheel";
+            })
+            "arpeggio"
+          ).src.meta.identifiers.purl;
+        expected = "pkg:pypi/arpeggio@2.0.2";
+      };
+
+      testPurlsCustomRegistrySdist = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "custom-registry";
+              sourcePreference = "sdist";
+            })
+            "arpeggio"
+          ).src.meta.identifiers.purls;
+        expected = [
+          "pkg:pypi/arpeggio@2.0.2"
+          "pkg:generic/arpeggio@2.0.2?download_url=https://my-registry.example.com/packages/Arpeggio-2.0.2.tar.gz"
+        ];
+      };
+
+      testNoPurlCustomRegistrySdist = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "custom-registry";
+              sourcePreference = "sdist";
+            })
+            "arpeggio"
+          ).src.meta.identifiers ? purl;
+        expected = false;
+      };
+
+      testPurlsCustomRegistryWheel = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "custom-registry";
+              sourcePreference = "wheel";
+            })
+            "arpeggio"
+          ).src.meta.identifiers.purls;
+        expected = [
+          "pkg:pypi/arpeggio@2.0.2"
+          "pkg:generic/arpeggio@2.0.2?download_url=https://my-registry.example.com/packages/Arpeggio-2.0.2-py2.py3-none-any.whl"
+        ];
+      };
+
+      testNoPurlCustomRegistryWheel = {
+        expr =
+          (
+            (mkPackageTest {
+              projectName = "custom-registry";
+              sourcePreference = "wheel";
+            })
+            "arpeggio"
+          ).src.meta.identifiers ? purl;
+        expected = false;
       };
 
       # Regression test: several extra-build-dependencies on one package must merge
