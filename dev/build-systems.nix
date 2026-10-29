@@ -5,7 +5,7 @@
 final: _prev:
 let
   pkgs = final.callPackage ({ pkgs }: pkgs) { };
-  inherit (pkgs) python3Packages;
+  inherit (pkgs) python3Packages lib;
 in
 builtins.mapAttrs (_n: v: final.callPackage v { }) {
 
@@ -353,6 +353,7 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         dependencies = {
           packaging = [ ];
           setuptools = [ ];
+          vcs-versioning = [ ];
         }
         // lib.optionalAttrs (python.pythonOlder "3.11") {
           tomli = [ ];
@@ -377,6 +378,7 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
       ++ resolveBuildSystem (
         {
           setuptools = [ ];
+          vcs-versioning = [ ];
         }
         // lib.optionalAttrs (python.pythonOlder "3.11") {
           tomli = [ ];
@@ -797,4 +799,40 @@ builtins.mapAttrs (_n: v: final.callPackage v { }) {
         flit-core = [ ];
       };
     };
+
+    vcs-versioning =
+      {
+        stdenv,
+        pyprojectHook,
+        resolveBuildSystem,
+        fetchurl,
+        python,
+      }:
+      stdenv.mkDerivation {
+        pname = "vcs-versioning";
+        version = "2.6.0";
+
+        src = fetchurl {
+          url = "https://files.pythonhosted.org/packages/ad/e7/2a691db7d076b75d099fdba1a14cd966931f2aeb591e77f6d22f15097326/vcs_versioning-2.6.0.tar.gz";
+          hash = "sha256-IukVkoji2Lyi+m9sMcNMnGauwVf2Dp5Sb10WDSUW1g8=";
+        };
+
+        passthru = {
+          dependencies = {
+            packaging = [ ];
+          };
+        };
+
+        nativeBuildInputs = [
+          pyprojectHook
+        ]
+        ++ resolveBuildSystem (
+          {
+            setuptools = [ ];
+          }
+          // lib.optionalAttrs (python.pythonOlder "3.11") {
+            typing-extensions = [ ];
+          }
+        );
+      };
 }

@@ -43,8 +43,8 @@
             ];
           in
           {
-            inherit (self.checks) x86_64-linux;
             aarch64-darwin = strip self.checks.aarch64-darwin;
+            x86_64-linux = strip self.checks.x86_64-linux;
           };
       };
 
