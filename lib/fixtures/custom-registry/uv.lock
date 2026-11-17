@@ -1,0 +1,22 @@
+version = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "arpeggio"
+version = "2.0.2"
+source = { registry = "https://my-registry.example.com/simple" }
+sdist = { url = "https://my-registry.example.com/packages/Arpeggio-2.0.2.tar.gz", hash = "sha256:c790b2b06e226d2dd468e4fbfb5b7f506cec66416031fde1441cf1de2a0ba700", size = 766643 }
+wheels = [
+    { url = "https://my-registry.example.com/packages/Arpeggio-2.0.2-py2.py3-none-any.whl", hash = "sha256:f7c8ae4f4056a89e020c24c7202ac8df3e2bc84e416746f20b0da35bb1de0250", size = 55287 },
+]
+
+[[package]]
+name = "custom-registry"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "arpeggio" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "arpeggio", specifier = ">=2.0.2" }]
