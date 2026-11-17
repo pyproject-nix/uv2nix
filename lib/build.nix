@@ -426,14 +426,14 @@ in
                 {
                   meta.identifiers.purlParts = {
                     type = "pypi";
-                    spec = "${package.name}@${package.version}";
+                    spec = "${pypa.normalizePackageName package.name}@${package.version}";
                   };
                 }
               else
                 {
                   meta.identifiers.purls = [
-                    "pkg:pypi/${package.name}@${package.version}"
-                    "pkg:generic/${package.name}@${package.version}?download_url=${sdistUrl}"
+                    "pkg:pypi/${pypa.normalizePackageName package.name}@${package.version}"
+                    "pkg:generic/${pypa.normalizePackageName package.name}@${package.version}?download_url=${sdistUrl}"
                   ];
                 }
             )
@@ -467,14 +467,14 @@ in
                       {
                         meta.identifiers.purlParts = {
                           type = "pypi";
-                          spec = "${package.name}@${package.version}";
+                          spec = "${pypa.normalizePackageName package.name}@${package.version}";
                         };
                       }
                     else
                       {
                         meta.identifiers.purls = [
-                          "pkg:pypi/${package.name}@${package.version}"
-                          "pkg:generic/${package.name}@${package.version}?download_url=${selectedWheel.url}"
+                          "pkg:pypi/${pypa.normalizePackageName package.name}@${package.version}"
+                          "pkg:generic/${pypa.normalizePackageName package.name}@${package.version}?download_url=${selectedWheel.url}"
                         ];
                       }
                   )
